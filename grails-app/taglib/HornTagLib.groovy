@@ -13,7 +13,7 @@ class HornTagLib {
         def path = attrs.remove( "path")
         attrs.tagName = "div"
         if ( path ) {attrs.path = encodeCSS( path)}
-        container.clone().call( attrs, body)
+        out << h.container( attrs, body)
     }
 
     static def PATTERN_PPN_ARRAY_INDICES = /\[([0-9]+)\]/
@@ -28,7 +28,7 @@ class HornTagLib {
             attrs.tagName = "span"
         }
         if ( path ) {attrs.path = encodeCSS( path)}
-        value.clone().call( attrs, body)
+        out << h.value( attrs, body)
     }
 
     def container = { attrs, body ->
@@ -61,7 +61,7 @@ class HornTagLib {
         sb.append ">"
         sb.append body()
         sb.append "</$tagName>"
-        out << sb.toString()
+        out << sb
     }
 
     def value = { attrs, body ->
@@ -101,7 +101,7 @@ class HornTagLib {
         sb.append bodyValue
         sb.append "</$tagName>"
 
-        out << sb.toString()
+        out << sb
     }
 
     protected void outputAttributes( attrs ) {
