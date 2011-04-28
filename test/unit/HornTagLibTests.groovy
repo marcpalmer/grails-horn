@@ -49,6 +49,16 @@ class HornTagLibTests extends TagLibUnitTestCase {
         assert tagLib.out.toString() == '<div class="horn _x-y-z-10-20-30-a-b">bodyValue</div>'
     }
 
+    void testNestedHornTags() {
+        tagLib.div( [path: 'outer'], { argsOuter ->
+            tagLib.div( [path: 'inner'], { argsInner ->
+                "bodyValue"
+            })
+        })
+
+        assert tagLib.out.toString() == '<div class="horn _outer"><div class="_inner">bodyValue</div></div>'
+    }
+
     void testHornTag() {
         [   [   attrs: [                                                                        ],  exception: true                                                                             ],
             [   attrs: [tag: 'div',                                                             ],  exception: true                                                                             ],

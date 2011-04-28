@@ -16,24 +16,24 @@ class HornTagLib {
 
     protected depth = 0
 
-    static void outputAttribute( sb, attributeName, attrs ) {
+    static void outputAttribute( out, attributeName, attrs ) {
         if ( attrs ) {
-            sb.append " "
-            sb.append attributeName
-            sb.append "=\""
-            sb.append attrs.join( " ").encodeAsHTML().trim()
-            sb.append "\""
+            out << " "
+            out << attributeName
+            out << "=\""
+            out << attrs.join( " ").encodeAsHTML().trim()
+            out << "\""
         }
     }
 
-    static void outputAttributes( sb, attrs ) {
+    static void outputAttributes( out, attrs ) {
         if ( attrs ) {
             attrs.each { k, v ->
-                sb.append " "
-                sb.append k
-                sb.append "=\""
-                sb.append v.encodeAsHTML().trim()
-                sb.append "\""
+                out << " "
+                out << k
+                out << "=\""
+                out << v.encodeAsHTML().trim()
+                out << "\""
             }
         }
     }
@@ -83,9 +83,9 @@ class HornTagLib {
                 "or \"json\" attributes must be supplied for the  " +
                 "\"<hornTag>\" tag.")
         }
-        def sb = new StringBuilder()
-        sb.append "<"
-        sb.append tag
+
+        out << "<"
+        out << tag
         def newClassAttrs =
             HornTagLib.buildAttributeValue(
                 HornTagLib.attributeWithDefault( attrs, "class"))
@@ -96,16 +96,16 @@ class HornTagLib {
             "${grailsApplication.config.hiddenCSSClass} data-json",
             newClassAttrs) }
         HornTagLib.buildAttributeValue( path, newClassAttrs)
-        HornTagLib.outputAttribute( sb, "class", newClassAttrs)
-        HornTagLib.outputAttributes( sb, attrs)
-        sb.append ">"
+        HornTagLib.outputAttribute( out, "class", newClassAttrs)
+        HornTagLib.outputAttributes( out, attrs)
+        out << ">"
         if ( !userSuppliedRoot ) { depth++ }
-        sb.append body()
+        out << body()
         if ( !userSuppliedRoot ) { depth-- }
-        sb.append "</"
-        sb.append tag
-        sb.append ">"
-        out << sb
+        out << "</"
+        out << tag
+        out << ">"
+        ""
     }
 
     def div = { attrs, body ->
