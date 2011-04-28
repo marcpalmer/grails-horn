@@ -8,119 +8,127 @@ class HornTagLib {
 
     static namespace = 'h'
 
-
-    def div = { attrs, body ->
-        def path = attrs.remove( "path")
-        attrs.tagName = "div"
-        if ( path ) {attrs.path = encodeCSS( path)}
-        out << h.container( attrs, body)
-    }
-
-    static def PATTERN_PPN_ARRAY_INDICES = /\[([0-9]+)\]/
+    static def PATTERN_PPN_ARRAY_INDICES = /(\[([0-9]+)\])/
     static def PATTERN_PPN_DEREFERENCE = /\./
 
-    static def PATTERN_PP_ARRAY_INDICES = /-([0-9]+)/
+    static def PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/
     static def PATTERN_PP_DEREFERENCE = /-/
 
-    def span = { attrs, body ->
-        def path = attrs.remove( "path")
-        if ( !attrs.value ) {
-            attrs.tagName = "span"
+
+    static void outputAttribute( sb, attributeName, attrs ) {
+        if ( attrs ) {
+            sb.append " "
+            sb.append attributeName
+            sb.append "=\""
+            sb.append attrs.join( " ").encodeAsHTML().trim()
+            sb.append "\""
         }
-        if ( path ) {attrs.path = encodeCSS( path)}
-        out << h.value( attrs, body)
     }
 
-    def container = { attrs, body ->
-
-        def path = attrs.remove( "path")
-        if ( !path ) {
-            throw new RuntimeException( message( code: 'hornTagLib.container.noPath'));
+    static void outputAttributes( sb, attrs ) {
+        if ( attrs ) {
+            attrs.each { k, v ->
+                sb.append " "
+                sb.append k
+                sb.append "=\""
+                sb.append v.encodeAsHTML().trim()
+                sb.append "\""
+            }
         }
+    }
 
-        def tagName = attrs.remove( "tagName")
-        if ( !tagName ) {
-            throw new RuntimeException( "tagName attribute must be supplied.");  // @todo i18n tagexception
+    static def encodeCSS( path ) {
+        path = path.replaceAll(
+            HornTagLib.PATTERN_PPN_ARRAY_INDICES, "-\$2").replaceAll(
+            HornTagLib.PATTERN_PPN_DEREFERENCE, "-")
+        if ( path.startsWith( "-") ) {
+            path = "_${path.substring( "-".length())}" }
+        !path.startsWith( "_") ?  "_$path" : path
+    }
+
+    static def decodeCSS( path ) {
+        path = path.replaceFirst( "_", "-").replaceAll(
+            HornTagLib.PATTERN_PP_ARRAY_INDICES, "[\$2]").replaceAll(
+            HornTagLib.PATTERN_PP_DEREFERENCE, ".")
+        path.startsWith( ".") ? path.substring( ".".length()) : path
+    }
+
+    static def attributeWithDefault( attributes, attributeName,
+        defaultValue = "" ) {
+        def attributeValue = attributes.remove( attributeName)
+
+        attributeValue ? attributeValue.trim() : defaultValue
+    }
+
+
+    static def buildAttributeValue( attributeValue, attrs = []) {
+        if ( attributeValue ) { attrs << attributeValue.toString().trim() }
+
+        attrs
+    }
+
+    static def isAttributeTruth( attrs, attributeName ) {
+        new Boolean( attrs.remove( attributeName))
+    }
+
+    def grailsApplication
+
+    def hornTag = { attrs, body ->
+        def tag = safeRemoveAttribute( attrs, 'tag', 'value')
+        def path = HornTagLib.attributeWithDefault( attrs, "path")
+        def isJSON = HornTagLib.isAttributeTruth( attrs, "json")
+        if ( !path && !isJSON ) {
+            throwTagError( "One of or both of the \"path\" " +
+                "or \"json\" attributes must be supplied for the  " +
+                "\"<value>\" tag.")
         }
-
-        def newClassAttr = [
-            attrs.remove( "class") ?: "",
-            attrs.remove( "root") ? "horn" : "",
-            path ?: ""].join( " ").trim()
-
         def sb = new StringBuilder()
         sb.append "<"
-        sb.append tagName
-        sb.append " class=\""
-        sb.append newClassAttr.encodeAsHTML()
-        sb.append "\" "
-        out << sb.toString()
-        out << outputAttributes( attrs)
-
-        sb = new StringBuilder()
+        sb.append tag
+        def newClassAttrs =
+            HornTagLib.buildAttributeValue(
+                HornTagLib.attributeWithDefault( attrs, "class"))
+        if ( HornTagLib.isAttributeTruth( attrs, "root") ) {
+            HornTagLib.buildAttributeValue( "horn", newClassAttrs) }
+        if ( isJSON ) { HornTagLib.buildAttributeValue(
+            "${grailsApplication.config.hiddenCSSClass} data-json",
+            newClassAttrs) }
+        HornTagLib.buildAttributeValue( path, newClassAttrs)
+        HornTagLib.outputAttribute( sb, "class", newClassAttrs)
+        HornTagLib.outputAttributes( sb, attrs)
         sb.append ">"
         sb.append body()
-        sb.append "</$tagName>"
-        out << sb
-    }
-
-    def value = { attrs, body ->
-        def path = attrs.remove( "path")
-        def isJSON = attrs.remove( "json")
-
-        if ( !path && !isJSON ) {
-            throw new RuntimeException( "Must declare a path or declare as json.");  // @todo i18n + tagexception
-        }
-
-        def tagName = attrs.remove( "tagName")
-        def abbrValue = attrs.remove( "value")
-        if ( abbrValue ) {
-            if ( tagName ) {
-                throw new RuntimeException( "Don't supply tagName attribute if value attribute specified.");  // @todo i18n + tagexception
-            }
-            tagName = 'abbr'
-        }
-
-        if ( !tagName ) {
-            throw new RuntimeException( "tagName attribute must be supplied if not using value attribute.");  // @todo i18n + tagexception
-        }
-
-        def bodyValue = body()
-
-        def newClassAttr = [
-            attrs.remove( "class") ?: "",
-            path ?: "",
-            isJSON ? "hidden data-json" : ""].join( " ").trim()
-
-        def sb = new StringBuilder()
-        sb.append "<$tagName class=\"${newClassAttr.encodeAsHTML()}\""
-        if ( abbrValue ) {
-            sb.append " title=\"${abbrValue.encodeAsHTML()}\""
-        }
+        sb.append "</"
+        sb.append tag
         sb.append ">"
-        sb.append bodyValue
-        sb.append "</$tagName>"
-
         out << sb
     }
 
-    protected void outputAttributes( attrs ) {
-        attrs.each { k,v ->
-            out << k << "=\"" << v.encodeAsHTML() << "\" "
-        }
+    def div = { attrs, body ->
+        attrs.tag = "div"
+        attrs.path = HornTagLib.encodeCSS( attrs.path)
+        hornTag( attrs, body)
     }
 
-    protected def encodeCSS( path ) {
-        path = ((path =~
-            HornTagLib.PATTERN_PPN_ARRAY_INDICES).replaceAll( "-\$1") =~
-            HornTagLib.PATTERN_PPN_DEREFERENCE).replaceAll( "-")
-
-        path = (path.endsWith( "-") ? path.substring( 0, path.length - 1) : path)
-        "_" + (path.startsWith( "-") ? path.substring( 1) : path)
+    def span = { attrs, body ->
+        attrs.tag = "span"
+        attrs.path = HornTagLib.encodeCSS( attrs.path)
+        hornTag( attrs, body)
     }
 
-    protected def decodeCSS( propertyPath ) {
-        propertyPath = "-" + (propertyPath.startsWith( "_") ? propertyPath.substring( 1) : propertyPath)
-        ((propertyPath =~ HornTagLib.PATTERN_PP_ARRAY_INDICES).replaceAll( "[\$1]") =~ HornTagLib.PATTERN_PP_DEREFERENCE).replaceAll( ".")
+    def abbr = { attrs, body ->
+        def value = safeRemoveAttribute( attrs, 'value', 'abbr')
+        attrs.tag = 'abbr'
+        attrs.title = value
+
+        attrs.path = HornTagLib.encodeCSS( attrs.path)
+        hornTag( attrs, body)
+    }
+
+    protected def safeRemoveAttribute( attributes, attributeName, tag ) {
+        def attributeValue = attributes.remove( attributeName)
+        if ( !attributeValue ) { throwTagError(
+            "Attribute \"${attributeName}\" is required for the \"<${tag}>\" tag.") }
+        attributeValue.toString().trim()
     }
 }

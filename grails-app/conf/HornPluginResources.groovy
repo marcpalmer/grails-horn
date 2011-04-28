@@ -16,6 +16,24 @@ modules = {
             nominify: false
     }
 
+    'horn-create' {
+        dependsOn 'horn'
+        resource
+            url: [
+                dir:'js/jquery/horn',
+                file:"horn-create.js"]
+            nominify: false
+    }
+
+    'horn-extract' {
+        dependsOn 'horn, horn-create'
+        resource
+            url: [
+                dir:'js/jquery/horn',
+                file:"horn-extract.js"]
+            nominify: false
+    }
+
     'horn-converters' {
         dependsOn 'horn'
         resource

@@ -13,3 +13,6 @@ log4j = {
 
     warn   'org.mortbay.log'
 }
+
+useHTML5 = false
+hiddenCSSClass = "hidden"

@@ -80,6 +80,10 @@ function Horn() {
     // modified but can be replaced with public flavours
     this.option = function( option ) {
         switch ( option ) {
+            case "html5":
+                this.opts.html5
+                break;
+
             case "pattern":
                 this.opts.patternInfo[ arguments[ 1]] = {
                     converterName: arguments[ 2]
@@ -88,6 +92,9 @@ function Horn() {
 
             case "converter":
                 this.opts.converters[ arguments[ 1]] = arguments[ 2];
+                break;
+
+            default:
                 break;
         }
     };
