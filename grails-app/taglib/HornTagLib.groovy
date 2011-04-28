@@ -14,6 +14,7 @@ class HornTagLib {
     static def PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/
     static def PATTERN_PP_DEREFERENCE = /-/
 
+    protected depth = 0
 
     static void outputAttribute( sb, attributeName, attrs ) {
         if ( attrs ) {
@@ -74,13 +75,13 @@ class HornTagLib {
     def grailsApplication
 
     def hornTag = { attrs, body ->
-        def tag = safeRemoveAttribute( attrs, 'tag', 'value')
+        def tag = safeRemoveAttribute( attrs, 'tag', 'hornTag')
         def path = HornTagLib.attributeWithDefault( attrs, "path")
         def isJSON = HornTagLib.isAttributeTruth( attrs, "json")
         if ( !path && !isJSON ) {
             throwTagError( "One of or both of the \"path\" " +
                 "or \"json\" attributes must be supplied for the  " +
-                "\"<value>\" tag.")
+                "\"<hornTag>\" tag.")
         }
         def sb = new StringBuilder()
         sb.append "<"
@@ -88,7 +89,8 @@ class HornTagLib {
         def newClassAttrs =
             HornTagLib.buildAttributeValue(
                 HornTagLib.attributeWithDefault( attrs, "class"))
-        if ( HornTagLib.isAttributeTruth( attrs, "root") ) {
+        def userSuppliedRoot = HornTagLib.isAttributeTruth( attrs, "root")
+        if ( userSuppliedRoot || (depth == 0) ) {
             HornTagLib.buildAttributeValue( "horn", newClassAttrs) }
         if ( isJSON ) { HornTagLib.buildAttributeValue(
             "${grailsApplication.config.hiddenCSSClass} data-json",
@@ -97,7 +99,9 @@ class HornTagLib {
         HornTagLib.outputAttribute( sb, "class", newClassAttrs)
         HornTagLib.outputAttributes( sb, attrs)
         sb.append ">"
+        if ( !userSuppliedRoot ) { depth++ }
         sb.append body()
+        if ( !userSuppliedRoot ) { depth-- }
         sb.append "</"
         sb.append tag
         sb.append ">"
@@ -128,7 +132,7 @@ class HornTagLib {
     protected def safeRemoveAttribute( attributes, attributeName, tag ) {
         def attributeValue = attributes.remove( attributeName)
         if ( !attributeValue ) { throwTagError(
-            "Attribute \"${attributeName}\" is required for the \"<${tag}>\" tag.") }
+            "The \"${attributeName}\" attribute is required for the \"<${tag}>\" tag.") }
         attributeValue.toString().trim()
     }
 }

@@ -37,7 +37,6 @@ class HornTagLibTests extends TagLibUnitTestCase {
             { args -> "bodyValue"})
 
         assert tagLib.out.toString() == '<div class="class horn _path" hungry="cats" green="fields">bodyValue</div>'
-                                        '<div class="class horn _path" hungry="cats" green="fields>bodyValue</div>'
     }
 
     void testDivRewritesPaths() {
@@ -47,26 +46,26 @@ class HornTagLibTests extends TagLibUnitTestCase {
             ],
             { args -> "bodyValue"})
 
-        assert tagLib.out.toString() == '<div class="_x-y-z-10-20-30-a-b">bodyValue</div>'
+        assert tagLib.out.toString() == '<div class="horn _x-y-z-10-20-30-a-b">bodyValue</div>'
     }
 
     void testHornTag() {
         [   [   attrs: [                                                                        ],  exception: true                                                                             ],
             [   attrs: [tag: 'div',                                                             ],  exception: true                                                                             ],
             [   attrs: [                            path: '_path'                               ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path'                               ],                      result: '<div class="_path">bodyValue</div>'                            ],
+            [   attrs: [tag: 'div',                 path: '_path'                               ],                      result: '<div class="horn _path">bodyValue</div>'                            ],
             [   attrs: [                                            json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                                 json: 'true'                ],                      result: '<div class="hidden data-json">bodyValue</div>'                 ],
+            [   attrs: [tag: 'div',                                 json: 'true'                ],                      result: '<div class="horn hidden data-json">bodyValue</div>'                 ],
             [   attrs: [                            path: '_path',  json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',  json: 'true'                ],                      result: '<div class="hidden data-json _path">bodyValue</div>'           ],
+            [   attrs: [tag: 'div',                 path: '_path',  json: 'true'                ],                      result: '<div class="horn hidden data-json _path">bodyValue</div>'           ],
             [   attrs: [            class: "a b c",                                             ],  exception: true                                                                             ],
             [   attrs: [tag: 'div', class: "a b c",                                             ],  exception: true                                                                             ],
             [   attrs: [            class: "a b c", path: '_path'                               ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path'                               ],                      result: '<div class="a b c _path">bodyValue</div>'                      ],
+            [   attrs: [tag: 'div', class: "a b c", path: '_path'                               ],                      result: '<div class="a b c horn _path">bodyValue</div>'                      ],
             [   attrs: [            class: "a b c",                 json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                 json: 'true'                ],                      result: '<div class="a b c hidden data-json">bodyValue</div>'           ],
+            [   attrs: [tag: 'div', class: "a b c",                 json: 'true'                ],                      result: '<div class="a b c horn hidden data-json">bodyValue</div>'           ],
             [   attrs: [            class: "a b c", path: '_path',  json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',  json: 'true'                ],                      result: '<div class="a b c hidden data-json _path">bodyValue</div>'     ],
+            [   attrs: [tag: 'div', class: "a b c", path: '_path',  json: 'true'                ],                      result: '<div class="a b c horn hidden data-json _path">bodyValue</div>'     ],
             [   attrs: [                                                                        ],  exception: true                                                                             ],
 
             [   attrs: [tag: 'div',                                                 root: 'true'],  exception: true                                                                             ],
@@ -88,10 +87,13 @@ class HornTagLibTests extends TagLibUnitTestCase {
         ].each { attrRecord ->
             def passed = false
             try {
-                tagLib.hornTag( attrRecord.attrs, {args -> "bodyValue"})
+                tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
+                def attrs = [:]
+                attrs.putAll( attrRecord.attrs)
+                tagLib.hornTag( attrs, {args -> "bodyValue"})
                 passed = tagLib.out.toString() == attrRecord.result
             } catch ( GrailsTagException gte ) {
-                passed = attrRecord.exception
+                passed = attrRecord.exception == true
             }
             assert passed
             setUp()

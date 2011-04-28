@@ -6,10 +6,13 @@
         <meta name="layout" content="horned_html5" />
     </head>
     <body>
-        <h:hornTag root="true"
-                   class="passthrough"
+        <h:hornTag class="passthrough"
                    tag="div"
                    path="_key">
+            <h:hornTag class="passthrough"
+                       tag="div"
+                       path="_key">
+            </h:hornTag>
         </h:hornTag>
     </body>
 </html>

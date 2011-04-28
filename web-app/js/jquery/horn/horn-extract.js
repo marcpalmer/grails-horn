@@ -1,1 +1,1 @@
-$(function() { window.horn.extract({storeBackRefs: true}); } );
+$(function() { window.horn.extract(); } );

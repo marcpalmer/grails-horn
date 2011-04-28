@@ -1,1 +1,1 @@
-$(function() { window.horn = new Horn(); } );
+window.horn = new Horn();
