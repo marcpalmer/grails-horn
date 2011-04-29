@@ -1,5 +1,6 @@
 modules = {
     'horn' {
+        dependsOn 'jquery'
         dependsOn 'jquery-json'
         resource
             url: [
