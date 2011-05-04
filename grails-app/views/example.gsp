@@ -3,16 +3,9 @@
 
 <html>
     <head>
-        <meta name="layout" content="horned_html5" />
+        <meta name="layout" content="horned" />
     </head>
     <body>
-        <h:hornTag class="passthrough"
-                   tag="div"
-                   path="_key">
-            <h:hornTag class="passthrough"
-                       tag="div"
-                       path="_key">
-            </h:hornTag>
-        </h:hornTag>
+        <h:div emptyBodyClass="hidden" path="context">body</h:div>
     </body>
 </html>
