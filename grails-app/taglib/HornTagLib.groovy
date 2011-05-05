@@ -125,7 +125,6 @@ class HornTagLib {
         def newClassAttrs = addAttributeValues(
             HornTagLib.removeAttribute( attrs, "class"))
 
-
         def emptyBodyClass = attrs.remove('emptyBodyClass')?.trim()
         if ( emptyBodyClass && !templating && (bodyValue?.trim() == '') ) {
             HornTagLib.addAttributeValue( emptyBodyClass, newClassAttrs)

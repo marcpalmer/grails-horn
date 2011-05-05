@@ -6,6 +6,8 @@
         <meta name="layout" content="horned" />
     </head>
     <body>
-        <h:div emptyBodyClass="hidden" path="context">body</h:div>
+        <horn:div emptyBodyClass="hidden" path="context">
+            <horn:span path="key" json="true">{"a": false}</horn:span>
+        </horn:div>
     </body>
 </html>

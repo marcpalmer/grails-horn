@@ -1,7 +1,7 @@
 class HornGrailsPlugin {
     def version = "0.1"
     def grailsVersion = "1.3.1 > *"
-    def dependsOn = [jquery: "1.4 > *", jqueryJSON: "2.2 > *"]
+    def dependsOn = [jquery: "1.4 > *", jqueryJson: "2.2.2 > *"]
     def pluginExcludes = [
         "grails-app/views/error.gsp",
         "grails-app/views/example.gsp",
