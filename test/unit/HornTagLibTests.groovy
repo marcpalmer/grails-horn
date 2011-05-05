@@ -127,6 +127,20 @@ class HornTagLibTests extends TagLibUnitTestCase {
         assert mockRequest[ HornTagLib.KEY_TEMPLATING]
     }
 
+
+    void testTemplateOmitsHorn() {
+        tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
+        tagLib.templating( [value: "true"], { args -> "" })
+        tagLib.templating( [value: "false"], { args -> "" })
+        tagLib.div(
+            [
+                path: 'x'
+            ],
+            { args -> "bodyValue"})
+
+        assert tagLib.out.toString() == '<div class="horn _x">bodyValue</div>'
+    }
+
     void testEmptyValueClassWithBodyValue() {
         NON_JSON_DATA.each { attrRecord ->
             def passed = false

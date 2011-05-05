@@ -127,10 +127,8 @@ class HornTagLib {
 
 
         def emptyBodyClass = attrs.remove('emptyBodyClass')?.trim()
-        if ( !templating ) {
-            if ( (bodyValue?.trim() == '') && (emptyBodyClass != null) && (emptyBodyClass != "") ) {
-                HornTagLib.addAttributeValue( emptyBodyClass, newClassAttrs)
-            }
+        if ( emptyBodyClass && !templating && (bodyValue?.trim() == '') ) {
+            HornTagLib.addAttributeValue( emptyBodyClass, newClassAttrs)
         }
 
         if ( userSuppliedRoot || (!templating && isLevel0) ) {
@@ -170,8 +168,8 @@ class HornTagLib {
                         attrs.tag = "a"
                         out << hornTag( attrs, body) }
     def abbr =      { attrs, body ->
-                        def value = safeRemoveAttribute(
-                            attrs, 'value', 'abbr')
+                        def value =
+                            safeRemoveAttribute( attrs, 'value', 'abbr')
                         attrs.tag = 'abbr'
                         attrs.title = value
                         out << hornTag( attrs, body) }
