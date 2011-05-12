@@ -221,7 +221,6 @@ class HornTagLibTests extends TagLibUnitTestCase {
                 def attrs = [:]
                 attrs.putAll( attrRecord.attrs)
                 tagLib.templating( [value:"true"], {args -> ""})
-                println attrs
                 tagLib.hornTag( attrs, {args -> "bodyValue"})
                 assert tagLib.out.toString() == attrRecord.result
             } catch ( GrailsTagException gte ) {
@@ -304,30 +303,32 @@ class HornTagLibTests extends TagLibUnitTestCase {
 
         "_e-j-n": "e.j.n",
         "_e-j-o": "e.j.o",
-        "_e-j-p": "e.j.p"
+        "_e-j-p": "e.j.p",
+
+        "_x-2-y-X": "x[2].y[X]"
     ]
 
     void testDecodeCSS() {
         HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assert tagLib.decodeCSS( k) == v
+            assertEquals tagLib.decodeCSS( k), v
         }
     }
 
     void testEncodeCSS() {
         HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assert tagLib.encodeCSS( v) == k
+            assertEquals tagLib.encodeCSS( v), k
         }
     }
 
     void testEncodeDecodeCSS() {
         HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assert tagLib.decodeCSS( tagLib.encodeCSS( v)) == v
+            assertEquals tagLib.decodeCSS( tagLib.encodeCSS( v)), v
         }
     }
 
     void testDecodeEncodeCSS() {
         HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assert tagLib.encodeCSS( tagLib.decodeCSS( k)) == k
+            assertEquals tagLib.encodeCSS( tagLib.decodeCSS( k)), k
         }
     }
 }

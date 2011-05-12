@@ -3,8 +3,6 @@
  *
  *  @author Chris Denman
  *  @author Marc Palmer
- *
- *  @todo custom <json> tag?
  */
 class HornTagLib {
 
@@ -13,10 +11,10 @@ class HornTagLib {
     static KEY_PREFIX_HORNTAGLIB = "com.grailsrocks.horn.hornTagLib"
     static KEY_TEMPLATING = HornTagLib.KEY_PREFIX_HORNTAGLIB + ".templating"
 
-    static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9]+)\])/
+    static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9X]+)\])/
     static PATTERN_PPN_DEREFERENCE = /\./
 
-    static PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/
+    static PATTERN_PP_ARRAY_INDICES = /(-([0-9X]+))/
     static PATTERN_PP_DEREFERENCE = /-/
 
     protected depth = 0
@@ -149,7 +147,7 @@ class HornTagLib {
                 newClassAttrs)
         }
 
-        if ( !templating && path ) {
+        if ( path ) {
             path = HornTagLib.encodeCSS( path)
             HornTagLib.addAttributeValue( path, newClassAttrs)
         }

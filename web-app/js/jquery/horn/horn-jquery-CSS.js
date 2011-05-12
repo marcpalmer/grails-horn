@@ -5,17 +5,22 @@ Horn.prototype.features = {
     cssJSON:            'data-json',
 
     extractCSSPropertyPath: function( n ) {
+        var cssPrefixLength = Horn.prototype.features.cssPrefix.length;
+        var classAttr = window.$(n).attr( "class");
         var path = null;
-        this.each(
-            this.toTokens( window.$(n).attr( "class")),
-            function( i, n ) {
-                if ( this.startsWith( n, this.features.cssPrefix) ) {
-                    path = n.substring( this.features.cssPrefix.length); // @todo cache length
-                    if ( path === '' ) { path = null; }
-                    return false;
-                }
-            },
-            this);
+        if ( classAttr ) {
+            Horn.prototype.splitEach(
+                classAttr,
+                " ",
+                function( token ) {
+                    if ( Horn.prototype.startsWith( token,
+                        Horn.prototype.features.cssPrefix) ) {
+                        path = token.substring( cssPrefixLength);
+                        if ( path === '' ) { path = null; }
+                        return false;
+                    }
+                });
+        }
 
         return path;
     },
