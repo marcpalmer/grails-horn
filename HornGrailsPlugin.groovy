@@ -1,5 +1,5 @@
 class HornGrailsPlugin {
-    def version = "1.0.13"
+    def version = "1.0.27"
     def grailsVersion = "1.3.1 > *"
     def dependsOn = [jquery: "1.4 > *", jqueryJson: "2.2.2 > *"]
     def pluginExcludes = [
@@ -13,10 +13,4 @@ class HornGrailsPlugin {
     def title = "Horn"
     def description = 'Easy HTML data embedding.'
     def documentation = "http://grails.org/plugin/horn"
-    def doWithApplicationContext = { applicationContext -> }
-    def doWithDynamicMethods = { ctx -> }
-    def doWithSpring = { }
-    def doWithWebDescriptor = { xml -> }
-    def onChange = { event -> }
-    def onConfigChange = { event -> }
 }
