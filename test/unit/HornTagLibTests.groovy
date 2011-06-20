@@ -3,276 +3,39 @@ import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 import org.codehaus.groovy.grails.plugins.codecs.HTMLCodec
 import org.codehaus.groovy.grails.plugins.web.taglib.FormTagLib
 
+/**
+ *  Unit Tests for HornTagLib
+ *
+ *  @author Chris Denman
+ *  @author Marc Palmer
+ */
 class HornTagLibTests extends TagLibUnitTestCase {
-
-    static NON_JSON_DATA =
-        [   [   attrs: [                                                                        ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                                                             ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [                            path: '_path'                               ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path'                               ],                      result: '<div class="horn _path">bodyValue</div>',                          emptyValueResult: '<div class="emptyBodyClass horn _path"></div>'                                          ],
-            [   attrs: [                                            json: 'true'                ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                                 json: 'true'                ],                      result: '<div class="horn hidden data-json">bodyValue</div>',               emptyValueResult: '<div class="emptyBodyClass horn hidden data-json"></div>'                               ],
-            [   attrs: [                            path: '_path',  json: 'true'                ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',  json: 'true'                ],                      result: '<div class="horn hidden data-json _path">bodyValue</div>',         emptyValueResult: '<div class="emptyBodyClass horn hidden data-json _path"></div>'                         ],
-            [   attrs: [            class: "a b c",                                             ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                                             ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [            class: "a b c", path: '_path'                               ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path'                               ],                      result: '<div class="a b c horn _path">bodyValue</div>',                    emptyValueResult: '<div class="a b c emptyBodyClass horn _path"></div>'                                    ],
-            [   attrs: [            class: "a b c",                 json: 'true'                ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                 json: 'true'                ],                      result: '<div class="a b c horn hidden data-json">bodyValue</div>',         emptyValueResult: '<div class="a b c emptyBodyClass horn hidden data-json"></div>'                         ],
-            [   attrs: [            class: "a b c", path: '_path',  json: 'true'                ],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',  json: 'true'                ],                      result: '<div class="a b c horn hidden data-json _path">bodyValue</div>',   emptyValueResult: '<div class="a b c emptyBodyClass horn hidden data-json _path"></div>'                   ],
-            [   attrs: [                                                                        ],  exception: true                                                                                                                                                                                             ],
-
-            [   attrs: [tag: 'div',                                                 root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [                            path: '_path',                  root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',                  root: 'true'],                      result: '<div class="horn _path">bodyValue</div>',                          emptyValueResult: '<div class="emptyBodyClass horn _path"></div>'                                          ],
-            [   attrs: [                                            json: 'true',   root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                                 json: 'true',   root: 'true'],                      result: '<div class="horn hidden data-json">bodyValue</div>',               emptyValueResult: '<div class="emptyBodyClass horn hidden data-json"></div>'                               ],
-            [   attrs: [                            path: '_path',  json: 'true',   root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',  json: 'true',   root: 'true'],                      result: '<div class="horn hidden data-json _path">bodyValue</div>',         emptyValueResult: '<div class="emptyBodyClass horn hidden data-json _path"></div>'                         ],
-            [   attrs: [            class: "a b c",                                 root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                                 root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [            class: "a b c", path: '_path',                  root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',                  root: 'true'],                      result: '<div class="a b c horn _path">bodyValue</div>',                    emptyValueResult: '<div class="a b c emptyBodyClass horn _path"></div>'                                    ],
-            [   attrs: [            class: "a b c",                 json: 'true',   root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                 json: 'true',   root: 'true'],                      result: '<div class="a b c horn hidden data-json">bodyValue</div>',         emptyValueResult: '<div class="a b c emptyBodyClass horn hidden data-json"></div>'                         ],
-            [   attrs: [            class: "a b c", path: '_path',  json: 'true',   root: 'true'],  exception: true                                                                                                                                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',  json: 'true',   root: 'true'],                      result: '<div class="a b c horn hidden data-json _path">bodyValue</div>',   emptyValueResult: '<div class="a b c emptyBodyClass horn hidden data-json _path"></div>'                   ]
-
-        ]
-
-    protected void setUp() {
-        super.setUp()
-        loadCodec( HTMLCodec)
-    }
-
-    void testDivRootContext() {
-        tagLib.div(
-            [
-                path: 'path',
-                root: 'true',
-                class: 'class'
-            ],
-            { args -> "bodyValue"})
-
-        assert tagLib.out.toString() == '<div class="class horn _path">bodyValue</div>'
-    }
-
-    void testDivPassthroughAttributes() {
-        tagLib.div(
-            [
-                path: 'path',
-                root: 'true',
-                class: 'class',
-                hungry: 'cats',
-                green: 'fields'
-            ],
-            { args -> "bodyValue"})
-
-        assert tagLib.out.toString() == '<div class="class horn _path" hungry="cats" green="fields">bodyValue</div>'
-    }
-
-    void testDivRewritesPaths() {
-        tagLib.div(
-            [
-                path: 'x.y.z[10][20][30].a.b'
-            ],
-            { args -> "bodyValue"})
-
-        assert tagLib.out.toString() == '<div class="horn _x-y-z-10-20-30-a-b">bodyValue</div>'
-    }
-
-    void testTemplateNoAttrs() {
-        tagLib.templating( [:], { args -> "" })
-        assert !mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplateBlankValue() {
-        tagLib.templating( [value: ""], { args -> "" })
-        assert !mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplateTrueValue() {
-        tagLib.templating( [value: "true"], { args -> "" })
-        assert mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplatetRuEValue() {
-        tagLib.templating( [value: "tRuE"], { args -> "" })
-        assert mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplateTrueFalseValue() {
-        tagLib.templating( [value: "true"], { args -> "" })
-        assert mockRequest[ HornTagLib.KEY_TEMPLATING]
-        tagLib.templating( [value: "false"], { args -> "" })
-        assert !mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplateFalseValue() {
-        tagLib.templating( [value: "false"], { args -> "" })
-        assert !mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplateFaLsEValue() {
-        tagLib.templating( [value: "FaLsE"], { args -> "" })
-        assert !mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-    void testTemplateFalseTrueValue() {
-        tagLib.templating( [value: "false"], { args -> "" })
-        assert !mockRequest[ HornTagLib.KEY_TEMPLATING]
-        tagLib.templating( [value: "true"], { args -> "" })
-        assert mockRequest[ HornTagLib.KEY_TEMPLATING]
-    }
-
-
-    void testTemplateOmitsHorn() {
-        tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
-        tagLib.templating( [value: "true"], { args -> "" })
-        tagLib.templating( [value: "false"], { args -> "" })
-        tagLib.div(
-            [
-                path: 'x'
-            ],
-            { args -> "bodyValue"})
-
-        assert tagLib.out.toString() == '<div class="horn _x">bodyValue</div>'
-    }
-
-    void testEmptyValueClassWithBodyValue() {
-        NON_JSON_DATA.each { attrRecord ->
-            def passed = false
-            try {
-                tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
-                def attrs = [:]
-                attrs.putAll( attrRecord.attrs)
-                attrs.emptyBodyClass = 'emptyBodyClass'
-                tagLib.hornTag( attrs, {args -> "bodyValue"})
-                passed = tagLib.out.toString() == attrRecord.result
-            } catch ( GrailsTagException gte ) {
-                passed = attrRecord.exception == true
-            }
-            assert passed
-            setUp()
-        }
-    }
-
-    void testEmptyValueClassNoBodyValue() {
-        def passed
-        def attrs
-        NON_JSON_DATA.each { attrRecord ->
-            passed = false
-            attrs = [:]
-            try {
-                tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
-                attrs.putAll( attrRecord.attrs)
-                attrs.emptyBodyClass = 'emptyBodyClass'
-                tagLib.hornTag( attrs, {args -> ""})
-                passed = tagLib.out.toString() == attrRecord.emptyValueResult
-            } catch ( GrailsTagException gte ) {
-                passed = attrRecord.exception == true
-            }
-            assert passed
-            setUp()
-        }
-    }
-
-    void testTemplate() {
-        [   [   attrs: [                                                                        ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                                                             ],                      result: '<div class="hidden">bodyValue</div>'                                          ],
-            [   attrs: [                            path: '_path'                               ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path'                               ],                      result: '<div class="hidden">bodyValue</div>'                            ],
-            [   attrs: [                                            json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                                 json: 'true'                ],                      result: '<div class="hidden data-json">bodyValue</div>'                 ],
-            [   attrs: [                            path: '_path',  json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',  json: 'true'                ],                      result: '<div class="hidden data-json">bodyValue</div>'           ],
-            [   attrs: [            class: "a b c",                                             ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                                             ],                      result: '<div class="a b c hidden">bodyValue</div>'                            ],
-            [   attrs: [            class: "a b c", path: '_path'                               ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path'                               ],                      result: '<div class="a b c hidden">bodyValue</div>'                      ],
-            [   attrs: [            class: "a b c",                 json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                 json: 'true'                ],                      result: '<div class="a b c hidden data-json">bodyValue</div>'           ],
-            [   attrs: [            class: "a b c", path: '_path',  json: 'true'                ],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',  json: 'true'                ],                      result: '<div class="a b c hidden data-json">bodyValue</div>'     ],
-            [   attrs: [                                                                        ],  exception: true                                                                             ],
-
-            [   attrs: [tag: 'div',                                                 root: 'true'],                      result: '<div class="horn hidden">bodyValue</div>'                             ],
-            [   attrs: [                            path: '_path',                  root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',                  root: 'true'],                      result: '<div class="horn hidden">bodyValue</div>'                       ],
-            [   attrs: [                                            json: 'true',   root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                                 json: 'true',   root: 'true'],                      result: '<div class="horn hidden data-json">bodyValue</div>'            ],
-            [   attrs: [                            path: '_path',  json: 'true',   root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div',                 path: '_path',  json: 'true',   root: 'true'],                      result: '<div class="horn hidden data-json">bodyValue</div>'      ],
-            [   attrs: [            class: "a b c",                                 root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                                 root: 'true'],                      result: '<div class="a b c horn hidden">bodyValue</div>'                       ],
-            [   attrs: [            class: "a b c", path: '_path',                  root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',                  root: 'true'],                      result: '<div class="a b c horn hidden">bodyValue</div>'                 ],
-            [   attrs: [            class: "a b c",                 json: 'true',   root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c",                 json: 'true',   root: 'true'],                      result: '<div class="a b c horn hidden data-json">bodyValue</div>'      ],
-            [   attrs: [            class: "a b c", path: '_path',  json: 'true',   root: 'true'],  exception: true                                                                             ],
-            [   attrs: [tag: 'div', class: "a b c", path: '_path',  json: 'true',   root: 'true'],                      result: '<div class="a b c horn hidden data-json">bodyValue</div>'     ]
-
-        ].each { attrRecord ->
-            def passed = false
-            try {
-                tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
-                def attrs = [:]
-                attrs.putAll( attrRecord.attrs)
-                tagLib.templating( [value:"true"], {args -> ""})
-                tagLib.hornTag( attrs, {args -> "bodyValue"})
-                assert tagLib.out.toString() == attrRecord.result
-            } catch ( GrailsTagException gte ) {
-                assert attrRecord.exception == true
-            }
-
-            setUp()
-        }
-    }
-
-    void testHornTag() {
-        NON_JSON_DATA.each { attrRecord ->
-            def passed = false
-            try {
-                tagLib.metaClass.getGrailsApplication = { -> [config: [hiddenCSSClass: "hidden"]] }
-                def attrs = [:]
-                attrs.putAll( attrRecord.attrs)
-                tagLib.hornTag( attrs, {args -> "bodyValue"})
-                passed = tagLib.out.toString() == attrRecord.result
-            } catch ( GrailsTagException gte ) {
-                passed = attrRecord.exception == true
-            }
-            assert passed
-            setUp()
-        }
-    }
 
     static CSS_JAVA_PROPERTIES = [
         "_0": "[0]",
         "_1": "[1]",
         "_2": "[2]",
-        
+
         "_3-0": "[3][0]",
         "_3-1": "[3][1]",
         "_3-2": "[3][2]",
-        
+
         "_3-3-0": "[3][3][0]",
         "_3-3-1": "[3][3][1]",
         "_3-3-2": "[3][3][2]",
-        
+
         "_3-4-k": "[3][4].k",
         "_3-4-l": "[3][4].l",
         "_3-4-m": "[3][4].m",
-        
+
         "_4-f": "[4].f",
         "_4-g": "[4].g",
         "_4-h": "[4].h",
-        
+
         "_4-i-0": "[4].i[0]",
         "_4-i-1": "[4].i[1]",
         "_4-i-2": "[4].i[2]",
-        
+
         "_4-j-n": "[4].j.n",
         "_4-j-o": "[4].j.o",
         "_4-j-p": "[4].j.p",
@@ -308,27 +71,193 @@ class HornTagLibTests extends TagLibUnitTestCase {
         "_x-2-y-X": "x[2].y[X]"
     ]
 
-    void testDecodeCSS() {
-        HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assertEquals tagLib.decodeCSS( k), v
-        }
-    }
-
-    void testEncodeCSS() {
-        HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assertEquals tagLib.encodeCSS( v), k
-        }
-    }
-
-    void testEncodeDecodeCSS() {
-        HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assertEquals tagLib.decodeCSS( tagLib.encodeCSS( v)), v
-        }
-    }
-
     void testDecodeEncodeCSS() {
         HornTagLibTests.CSS_JAVA_PROPERTIES.each { k, v ->
-            assertEquals tagLib.encodeCSS( tagLib.decodeCSS( k)), k
+            assertEquals tagLib.cssToJSForm( tagLib.jsToCSSForm( v)), v
+            assertEquals tagLib.jsToCSSForm( tagLib.cssToJSForm( k)), k
+        }
+    }
+
+    void testIsAttributeTruthNoAttribute() {
+        assert HornTagLib.isAttributeTruth( [:], "key") == false
+    }
+
+    void testIsAttributeTruth() {
+        assert HornTagLib.isAttributeTruth( [key:"true"], "key") == true
+    }
+
+    void testIsAttributeTruthCaseSensitivity() {
+        assert HornTagLib.isAttributeTruth( [key:"TRUE"], "key") == true
+    }
+
+    void testRemoveAttriubteNotPresent() {
+        assert HornTagLib.removeAttribute(
+            [key:"TRUE"], "notpresent", "a") == "a"
+    }
+
+    void testRemoveAttriubteNotPresentNoDefault() {
+        assert HornTagLib.removeAttribute( [key:"TRUE"], "notpresent") != "a"
+    }
+
+    void testRemoveAttriubteNotPresentEmptyCollection() {
+        assert HornTagLib.removeAttribute( [:], "notpresent", "b") == "b"
+    }
+
+    void testRemoveAttriubte() {
+        assert HornTagLib.removeAttribute( [key:"TRUE"], "key", "a") == "TRUE"
+    }
+
+    void testAddAttributeIfFalse() {
+        def attrs = [:]
+        def key = "key"
+        HornTagLib.addAttributeIf( key, "value", attrs, false)
+        assert !attrs.containsKey( key)
+    }
+
+    void testAddAttributeIfTrue() {
+        def attrs = [:]
+        def key = "key"
+        HornTagLib.addAttributeIf( key, "value", attrs, true)
+        assert attrs.containsKey( key)
+    }
+
+    void testAddAttributeIfOverride() {
+        def attrs = [key:"a"]
+        def key = "key"
+        HornTagLib.addAttributeIf( key, "value", attrs, true)
+        assert attrs[ key] == "value"
+    }
+
+    void testAddAttributeIfGroovyTruth() {
+        def attrs = [:]
+        def key = "key"
+        HornTagLib.addAttributeIf( key, "value", attrs, "")
+        assert !attrs.containsKey( key)
+    }
+
+    void testAddAttributeReturnValue() {
+        def attrs = [:]
+        assert HornTagLib.addAttributeIf( "key", "value", attrs, true) == attrs
+    }
+
+    void testAddAttributeValue() {
+        def attrs = []
+        HornTagLib.addAttributeValue( "value", attrs)
+        assert attrs.contains( "value")
+    }
+
+    void testAddAttributeValueTrimming() {
+        def attrs = ["value"]
+        HornTagLib.addAttributeValue( " value ", attrs)
+        assert !attrs.contains( " value ")
+    }
+
+    void testAddAttributeValueReturnValue() {
+        def attrs = []
+        def rv = HornTagLib.addAttributeValue( "value", attrs)
+        assert attrs == rv
+    }
+
+    void testAddAttributeValueIfFalseDefault() {
+        def attrs = []
+        HornTagLib.addAttributeValueIf( "value", attrs)
+        assert !attrs.contains( "value")
+    }
+
+    void testAddAttributeValueIfFalse() {
+        def attrs = []
+        HornTagLib.addAttributeValueIf( "value", attrs, false)
+        assert !attrs.contains( "value")
+    }
+
+    void testAddAttributeValueIfTrue() {
+        def attrs = []
+        HornTagLib.addAttributeValueIf( "value", attrs, true)
+        assert attrs.contains( "value")
+    }
+
+    void testAddAttributeValueIfReturnValue() {
+        def attrs = []
+        def rv = HornTagLib.addAttributeValueIf( "value", attrs, true)
+        assert attrs == rv
+    }
+
+    void testSplitAddAttributeValuesEmptyBoth() {
+        def value = ""
+        def values = []
+        assert !HornTagLib.splitAddAttributeValues(
+            value, values).contains( value)
+    }
+
+    void testSplitAddAttributeValue() {
+        def value = "added"
+        def values = []
+        assert HornTagLib.splitAddAttributeValues(
+            value, values).contains( value)
+    }
+
+    void testSplitAddAttributeValueDuped() {
+        def value = "added"
+        def values = ["added"]
+        def rv = HornTagLib.splitAddAttributeValues( value, values)
+        assert rv.size() == 1
+        assert rv.contains( value)
+    }
+
+    void testSplitAddAttributeValueOrder() {
+        def value = "added"
+        def values = ["one", "two"]
+        def rv = HornTagLib.splitAddAttributeValues( value, values)
+        assert rv.size() == 3
+        assert rv[ 0] == "one"
+        assert rv[ 1] == "two"
+        assert rv[ 2] == "added"
+    }
+
+    void testSplitAddAttributeValueCase() {
+        def value = "ADDED"
+        def values = ["added"]
+        def rv = HornTagLib.splitAddAttributeValues( value, values)
+        assert rv.size() == 2
+        assert rv[ 0] == "added"
+        assert rv[ 1] == "ADDED"
+    }
+
+    void safeRemoveAttributeThrows() {
+        try {
+            HornTagLib.safeRemoveAttribute( [:], "a", "a")
+            assert false
+        } catch ( GrailsTagException gte ) {
+            assert true
+        }
+    }
+
+    void safeRemoveAttribute() {
+        try {
+            HornTagLib.safeRemoveAttribute( [a:0], "a", "a")
+            assert true
+        } catch ( GrailsTagException gte ) {
+            assert false
+        }
+    }
+
+    void safeRemoveAttributeRemoves() {
+        def attrs = [a:0]
+        try {
+            HornTagLib.safeRemoveAttribute( attrs, "a", "a")
+            assert !attrs.containsKey( "a")
+        } catch ( GrailsTagException gte ) {
+            assert false
+        }
+    }
+
+    void safeRemoveAttributeReturnValue() {
+        def attrs = [a:0]
+        try {
+
+            assert HornTagLib.safeRemoveAttribute( attrs, "a", "a") == attrs
+        } catch ( GrailsTagException gte ) {
+            assert false
         }
     }
 }
