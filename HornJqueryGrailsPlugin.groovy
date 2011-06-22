@@ -6,8 +6,8 @@ class HornGrailsPlugin {
         "grails-app/views/error.gsp",
         "grails-app/views/example.gsp",
         "grails-app/views/example_html5.gsp",
-        "grails-app/views/layouts/hornded.gsp",
-        "grails-app/views/layouts/hornded_html5.gsp"]
+        "grails-app/views/layouts/horned.gsp",
+        "grails-app/views/layouts/horned_html5.gsp"]
     def author = "Chris Denman"
     def authorEmail = "chrisdenman@me.com"
     def title = "Horn"
