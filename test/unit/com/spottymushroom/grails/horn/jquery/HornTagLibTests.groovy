@@ -80,16 +80,14 @@ class HornTagLibTests extends TagLibUnitTestCase {
         }
     }
 
-    void testIsAttributeTruthNoAttribute() {
-        assert HornTagLib.isAttributeTruth( [:], "key") == false
-    }
-
     void testIsAttributeTruth() {
-        assert HornTagLib.isAttributeTruth( [key:"true"], "key") == true
-    }
-
-    void testIsAttributeTruthCaseSensitivity() {
-        assert HornTagLib.isAttributeTruth( [key:"TRUE"], "key") == true
+        assert HornTagLib.isAttributeTruth( null) == false
+        assert HornTagLib.isAttributeTruth( false) == false
+        assert HornTagLib.isAttributeTruth( true) == true
+        assert HornTagLib.isAttributeTruth( "true") == true
+        assert HornTagLib.isAttributeTruth( "false") == false
+        assert HornTagLib.isAttributeTruth( "True") == false
+        assert HornTagLib.isAttributeTruth( "") == false
     }
 
     void testRemoveAttriubteNotPresent() {

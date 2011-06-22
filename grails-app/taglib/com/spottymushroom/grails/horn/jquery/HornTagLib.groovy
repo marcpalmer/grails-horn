@@ -21,14 +21,13 @@ class HornTagLib {
      *  Request key for the templating option.
      */
     static KEY_TEMPLATING = HornTagLib.KEY_PREFIX_HORNTAGLIB + ".templating"
+    static KEY_DEPTH = HornTagLib.KEY_PREFIX_HORNTAGLIB + ".depth"
 
     static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9X]+)\])/
     static PATTERN_PPN_DEREFERENCE = /\./
 
     static PATTERN_PP_ARRAY_INDICES = /(-([0-9X]+))/
     static PATTERN_PP_DEREFERENCE = /-/
-
-    protected depth = 0
 
     /**
      *  Remove a named attribute from a collection of attributes 
@@ -177,17 +176,16 @@ class HornTagLib {
     }
 
     /**
-     *  Remove and determine the <code>Boolean</code> truth value of an
-     *  attribute named within a colleciton.
+     *  Determines if the given attribute value represents a Boolean 'true' value.
      *
-     *  @param attrs the the attribute collection
-     *  @param attributeName the name of the attribute to insepct
+     *  @param val the attribute value to test
      *
-     *  @return <code>true</code> if the given named attribute represented
-     *      a Groovy <code>true</code> value, false otherwise
+     *  @return <code>true</code> if the given attribute value represents
+     *      <cdoe>Boolean true</code>, <cdoe>false</code> otherwise
      */
-    static isAttributeTruth( attrs, attributeName ) {
-        new Boolean( attrs.remove( attributeName))
+    static isAttributeTruth( val ) {
+        !val ? false :
+            val instanceof Boolean ? val : (val == 'true')
     }
 
     /**
@@ -265,11 +263,19 @@ class HornTagLib {
         def templating = request[ HornTagLib.KEY_TEMPLATING] == true
         def tag = safeRemoveAttribute( attrs, 'tag', 'hornTag')
         def path = HornTagLib.removeAttribute( attrs, "path")
-        def isJSON = HornTagLib.isAttributeTruth( attrs, "json")
+        def isJSON = HornTagLib.isAttributeTruth( HornTagLib.removeAttribute( attrs, "json"))
         if ( !path && !isJSON ) {
             throwTagError( """One of, or both of the "path" and "json" attributes must be supplied for the "<hornTag>" tag when not in templating mode.""")
         }
-        def isLevel0 = depth == 0
+
+        if ( !request.hasProperty( HornTagLib.KEY_DEPTH) ) {
+            request[ HornTagLib.KEY_DEPTH] = 0
+        }
+        def isLevel0 = request.hasProperty( HornTagLib.KEY_DEPTH) == 0
+
+
+
+
         def isAbsolutePath = path && path.startsWith( "/")
         if ( isAbsolutePath ) { if ( !html5 ) { path = path.substring( 1) } }
             else {
@@ -279,9 +285,9 @@ class HornTagLib {
                 }
             }
 
-        depth++
+        request.hasProperty( HornTagLib.KEY_DEPTH)++
         def bodyValue = body()
-        depth--
+        request.hasProperty( HornTagLib.KEY_DEPTH)--
         out << "<"
         out << tag
 
@@ -335,7 +341,7 @@ class HornTagLib {
      */
     def templating = { attrs, body ->
         request[ HornTagLib.KEY_TEMPLATING] =
-            HornTagLib.isAttributeTruth( attrs, "value")
+            HornTagLib.isAttributeTruth( HornTagLib.removeAttribute( attrs, "value"))
     }
 
     def a =         { attrs, body ->
