@@ -1,3 +1,5 @@
+package com.spottymushroom.grails.horn.jquery
+
 import org.codehaus.groovy.grails.web.taglib.exceptions.GrailsTagException
 
 import grails.test.GroovyPagesTestCase
