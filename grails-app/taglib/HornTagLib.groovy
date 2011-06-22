@@ -120,7 +120,7 @@ class HornTagLib {
 
     /**
      *  Split a value (converted to a <code>String</code>) and add the trimmed 
-     *  tokens to an attribute value colleciton.   
+     *  tokens to an attribute value collection.
      *  <p>
      *  Value is split using <code>" "</code> as a delimiter.    
      *

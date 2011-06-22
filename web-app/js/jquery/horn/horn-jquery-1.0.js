@@ -10,11 +10,12 @@
  */
 
 /**
- *  Used to create new Horn instances.
+ *  Used to create new <code>Horn</code> instances, thus:
+ *      <code>var horn = new Horn();</code>.
  *
  *  @constructor
  *
- *  @return {Horn} a newly initialized Horn instance
+ *  @return {Horn} a newly initialised Horn instance
  */
 var Horn = function() {
 
@@ -132,11 +133,10 @@ var Horn = function() {
      */
     var extract = this.scope( function( args ) {
         var _this = this;
-        var pathStem = this.definesProperty( args, 'path') ?
-            this.toInternalPath( args.path) : undefined;
-        var rootNodes = this.definesProperty( args, 'rootNodes') ?
-            args.rootNodes : (this.definesProperty( args, 'selector') ?
-                $(args.selector) : this.rootNodes());
+        var pathStem = this.definesProperty( args, 'pathStem') ?
+            this.toInternalPath( args.pathStem) : undefined;
+        var rootNodes = this.definesProperty( args, 'nodes') ?
+            $(args.nodes) : this.rootNodes();
         setDefaultModel();
         this.each( rootNodes,
             function( i, n ) {
@@ -151,12 +151,11 @@ var Horn = function() {
                         if ( bindingData === false ) {
                             return true; }
                         bindingData.readOnly = args.readOnly;
-                        bindingData.path = path;
+                        bindingData.path = _this.combinePaths( pathStem, path);
                         if ( bindingData.isJSON === false ) {
                             bindingData.value = convert( {
                                 value: bindingData.text,
-                                path:  _this.combinePaths( pathStem,
-                                    bindingData.path),
+                                path:  bindingData.path,
                                 type:  'fromText',
                                 node:  bindingData.node
                             });
@@ -243,8 +242,8 @@ var Horn = function() {
      * @function
      */
     var setDefaultArgs = this.scope( function( args ) {
-        var existingArgs = !this.definesProperty(
-            args, 'args') ? {} : args.args;
+        var existingArgs = this.definesProperty(
+            args, 'args') ? args.args : {};
         if ( this.definesProperty( args, 'defaults') ) {
             $.extend( existingArgs, args.defaults);
         }
@@ -295,26 +294,23 @@ var Horn = function() {
     }, this);
 
     /**
-     *  Walk DOM tree(s) and extract model data, allowing for subsequent
-     *  updating.
+     *  Walk DOM tree(s) and extract model data, allowing for subsequent model
+     *  to DOM updates.
      *  <p>
-     *  After execution, each value element encountered will have a
+     *  After execution, each Horn value element encountered will have a
      *  corresponding representation in the model. Altering such model
      *  values and then calling <code>updateDOM(...)</code> will refresh their
      *  display values.
      *  <p>
-     *  The DOM tree(s) to walk can be specified in exactly one of three ways:
+     *  The DOM tree(s) to walk may be specified in exactly one of two ways:
      *  <ol>
      *      <li>
      *          Horn will automatically find all DOM trees that have a root
      *          indicator.
      *      </li>
      *      <li>
-     *          Passing a collection of DOM elements as
-     *          <code>args.rootNodes</code>.
-     *      </li>
-     *      <li>
-     *          Passing a JQuery selector string as <code>args.selector.</code>
+     *          Passing in 'args.nodes', a collection of DOM elements or a
+     *          jQuery node selector.
      *      </li>
      *  </ol>
      *  <p>
@@ -322,16 +318,15 @@ var Horn = function() {
      *  <code>String</code> representation. Alternatively, applications can
      *  register converter functions to override this default behaviour.
      *  <p>
-     *  If later, model to DOM updates are not required, the alternative yet
-     *  otherwise identical function, <code>{@link Horn#load}</code> should be
-     *  used.
+     *  If model to DOM updates are not required, the alternative yet otherwise
+     *  identical function, <code>{@link Horn#load}</code> should be used
+     *  (or the 'readOnly' option).
      *
      *  @param {Object} args
-     *  @param {Object} [args.rootNodes] a collection of DOM nodes to bind from,
-     *      overrides the default node selection mechanism
-     *  @param {String} [args.selector] a jQuery DOM node selector for nodes to
-     *      bind from
-     *  @param {String} args.path
+     *  @param {Element|String} [args.nodes] DOM nodes or a jQuery selector
+     *  @param {String} [args.pathStem] a property path prefix that will be
+     *      appended the paths of value nodes' property paths before storage in
+     *      the model
      *
      *  @return the updated model
      *
@@ -346,19 +341,32 @@ var Horn = function() {
     };
 
     /**
-     *  Clone an HTML template, then walk it, binding values encountered.  
+     *  Walks a tree of cloned (or selected) DOM nodes, binding them to model
+     *  elements and populating their display values.
      *  <p>
-     *  Create a new UI element by cloning an existing template that is
-     *  marked up with Horn indicators, and populate the DOM nodes with
-     *  data from the specified property path.
+     *  During the walk, the property path for each DOM value node visited is
+     *  inspected and if there is a corresponding model element with the same
+     *  path it will be bound to the DOM node and the DOM node will receive its
+     *  value.
+     *  <p>
+     *  For each DOM value node encountered, the optional 'args.pathStem' will
+     *  be added to its property path before binding to a model value. Allowing
+     *  nodes derived from a single template to be bound to multiple model
+     *  locations.
+     *  <p>
+     *  Model to DOM data conversions are performed using this function with the
+     *  type parameter value 'toText'.
      *
      *  @param {Object} args
-     *  @param {String} args.path the property path within the model, to use to
-     *      populate this DOM node and its descendants
-     *  @param {Object} [args.data]
-     *  @param {Element|String} [args.node] a jQuery node or selector String
-     *  @param {Element|String} [args.template] jQuery node or selector String
-     *  @param [args.id] the new 'id' attribute value for a cloned args.template
+     *  @param {Element|String} [args.node] a jQuery node or selector - nodes
+     *      selected by this argument will not be cloned.
+     *  @param {Element|String} [args.template] jQuery node or selector - these
+     *      nodes will be cloned and the root node will have its 'id' attribute
+     *      removed and possibly set to 'args.newID'
+     *  @param {String} [args.id] the new 'id' attribute value applied to nodes
+     *      cloned or selected using 'args.template'
+     *  @param {String} [args.pathStem] a property path prefix appended to all
+     *      walked DOM nodes before binding to model values
      *
      *  @return the newly cloned and populated template
      *
@@ -378,8 +386,8 @@ var Horn = function() {
             }
         }
         setDefaultModel();
-        pathStem = this.definesProperty( args, 'path') ?
-            this.toInternalPath( args.path) : '';
+        pathStem = this.definesProperty( args, 'pathStem') ?
+            this.toInternalPath( args.pathStem) : '';
         this.walkDOM( node,
             this.scope( function( n, path ) {
                 return handleTemplateBinding( n, path, bindings);
@@ -422,12 +430,108 @@ var Horn = function() {
      *  <p>
      *  The following options are currently supported:<br>
      *  <ul>
-     *      <li><strong>defaultModel</strong> - for setting an explicit default
-     *          model (<code>Object</code> or <code>Array</code>)</li>
-     *      <li><strong>readOnly</strong> - If set to true, the automatic extraction 
-     *          at startup will call load() instead of bind() so there is no two-way binding to the DOM.</li>
-     *      <li><strong>converter</strong> - An object implementing the convert() function to perform
-     *          conversion to and from the DOM and model.</li>
+     *      <li>
+     *          <p>
+     *          <strong>defaultModel</strong> - For setting an explicit default
+     *          model (<code>Object</code> or <code>Array</code>)
+     *          </p>
+     *      </li>
+     *      <li>
+     *          <p>
+     *          <strong>readOnly</strong> - If set to true, the automatic
+     *          extraction at startup will call load() instead of bind() so
+     *          there is no two-way binding to the DOM.
+     *          </p>
+     *      </li>
+     *      <li>
+     *          <p>
+     *          <strong>converter</strong> - A function with the following
+     *          signature, <code>(args)</code> that will be called upon to
+     *          convert values under the following scenarios:
+     *          </p>
+     *          <p>
+     *              <ul>
+     *                  <li>
+     *                      <p>
+     *                      <strong>DOM to model</strong> :- when values are
+     *                      extracted from the DOM for storage in the model
+     *                      (functions <code>{@link Horn#bind}</code>,
+     *                      <code>{@link Horn#load}</code>) the
+     *                      <code>convert</code> function
+     *                      will be called with 'type' parameter value
+     *                      '<strong>fromText</strong>'.
+     *                      </p>
+     *                  </li>
+     *                  <li>
+     *                      <p>
+     *                      <strong>Model to DOM</strong> :- when values
+     *                      read from the model are destined for the DOM,
+     *                      (functions <code>{@link Horn#updateDOM}</code>,
+     *                      <code>{@link Horn#bindTo}</code>) the
+     *                      <code>convert</code> function will be called with
+     *                      'type' parameter value '<strong>toText</strong>'.
+     *                      </p>
+     *                  </li>
+     *                  <li>
+     *                      <p>
+     *                      <strong>JSON to model</strong> :- when JSON values
+     *                      are extracted from the DOM for model storage
+     *                      (functions <code>{@link Horn#bind}</code>,
+     *                      <code>{@link Horn#load}</code>), the
+     *                      <code>convert</code> function will be called with
+     *                      'type' parameter value '<strong>fromJSON</strong>'.
+     *                      </p>
+     *                  </li>
+     *              </ul>
+     *          </p>
+     *          <p>
+     *              The complete set of arguments passed to the
+     *              <code>convert</code> function are namely:
+     *              <ul>
+     *                  <li>
+     *                      <p>
+     *                      <strong>args.type</strong> :- the conversion 'type'
+     *                      as described above.
+     *                      </p>
+     *                  </li>
+     *
+     *                  <li>
+     *                      <p>
+     *                      <strong>args.value</strong> :- the value for
+     *                      conversion. The JavaScript type is dependent on the
+     *                      conversion being performed (<code>String</code> for
+     *                      '<strong>fromText</strong>' conversions and the
+     *                      corresponding model value's type in all others).
+     *                      </p>
+     *                  </li>
+     *
+     *                  <li>
+     *                      <p>
+     *                      <strong>args.path</strong> :- the property path for
+     *                      the DOM or model value.
+     *                      </p>
+     *                  </li>
+     *
+     *                  <li>
+     *                      <p>
+     *                      <strong>args.node</strong> :- the DOM node that
+     *                      generated the value.
+     *                      </p>
+     *                  </li>
+     *              </ul>
+     *          </p>
+     *          <p>
+     *              Converter functions can return <code>undefined</code> in
+     *              which case the value (all such values) will be treated as
+     *              <code>String</code> types - the same behaviour as having no
+     *              converter function registered.
+     *          </p>
+     *          <p>
+     *              <strong>Only a single converter function can be registered,
+     *              with any invocation overwriting any previously registered
+     *              function.</strong>
+     *          </p>
+     *      </li>
      *  </ul>
      *
      *  @param {Object} optionName the name of the option to set
@@ -459,15 +563,21 @@ var Horn = function() {
     };
 
     /**
-     *  Removes either, all bindings or, all bindings with a given path (that
-     *  matches a regular expression pattern).
+     *  Removes either, all bindings or, all bindings with a given property path
+     *  , or all bindings with property path's that match a given regular
+     *  expression.
      *  <p>
      *  If no arguments are defined, <strong>all bindings are removed</strong>.
+     *  <p>
+     *  If both 'args.path' and 'args.pattern' are supplied, the result is the
+     *  same as calling this function twice, once supplying 'args.path' and
+     *  thence 'args.pattern'.
      *
      *  @param {Object} args
-     *  @param {String} [args.path]
-     *  @param {String} [args.pattern] a regular expression pattern to match
-     *      against
+     *  @param {String} [args.path] all bindings with property path's that
+     *      equal this argument, will be removed
+     *  @param {String} [args.pattern] all bindings with property path's that
+     *      match this regular expression, will be removed
      *
      *  @public
      */
@@ -493,8 +603,8 @@ var Horn = function() {
      *  This function will not update DOM nodes if their model value has not
      *  changed.
      *
-     *  @param rootNode optional DOM node such that if supplied, only nodes
-     *      under this nodes will be updated.
+     *  @param {Element} rootNode optional DOM node such that if supplied, only
+     *      nodes under this nodes will be updated
      *
      *  @return {Array} an array of nodes that had their DOM values changed
      *
@@ -529,8 +639,8 @@ Horn.prototype = {
      *  @methodOf Horn.prototype
      */
     combinePaths: function( parent, child ) {
-        var parentDefined = this.isAdjustingPath( parent);
-        var childDefined = this.isAdjustingPath( child);
+        var parentDefined = this.isPathDefined( parent);
+        var childDefined = this.isPathDefined( child);
         if ( parentDefined && childDefined ) {
             return parent + "-" + child;
         } else if ( parentDefined ) {
@@ -541,7 +651,7 @@ Horn.prototype = {
     },
 
     /**
-     *  Determines if two values the same.
+     *  Determines if two values are the same.
      *  <p>
      *  Uses the <code>compare</code> function if it is defined on either
      *  argument else, the strict equality operator <code>===</code> is put
@@ -553,7 +663,7 @@ Horn.prototype = {
      *  @param j a value to compare
      *
      *  @return {Boolean} <code>true</code> if the two values are equal,
-     *  <code>false</code> otherwise
+     *      <code>false</code> otherwise
      *
      *  @methodOf Horn.prototype
      */
@@ -567,11 +677,11 @@ Horn.prototype = {
     /**
      *  Returns <code>true</code> if a container contains an item.
      *
-     *  @param container the container to search
-     *  @param {Object} item the item to search for
+     *  @param {Object|Array} container the container to search
+     *  @param {Object} item the item to locate
      *
      *  @return {Boolean} <code>true</code> if the item was found,
-     *  <code>false</code> otherwise
+     *      <code>false</code> otherwise
      *
      *  @methodOf Horn.prototype
      */
@@ -584,10 +694,9 @@ Horn.prototype = {
      *  <p>
      *  Copies neither, <code>undefined</code> nor prototypical, properties.
      *  <p>
-     *  The source of property names to copy is given by
-     *  <code>args.dest</code>'s property names, unless the optional
-     *  <code>args.props</code> argument is supplied, in which case it is used
-     *  instead.
+     *  The source of property names to copy is given by the property names
+     *  defined in 'args.dest' unless the optional 'args.props' argument is
+     *  supplied, in which case it is used instead.
      *
      *  @param {Object} args
      *  @param {Object} args.src the property source
@@ -649,7 +758,7 @@ Horn.prototype = {
         $.each( collection, ctx ? this.scope( fn, ctx) : fn);
     },
 
-        /**
+    /**
      *  Determines if a given node in the context of a Horn DOM tree is a value
      *  node or not.
      *  <p>
@@ -668,7 +777,7 @@ Horn.prototype = {
         var theContained;
         var nodeName;
         var contents = $($(node).contents());
-        var isAdjustingPath = this.isAdjustingPath(
+        var isPathDefined = this.isPathDefined(
             this.pathIndicator(node));
         var cd = {
             isJSON: this.hasJSONIndicator(node),
@@ -677,7 +786,7 @@ Horn.prototype = {
         var isEmptyNode = contentsSize === 0;
         if ( (contentsSize === 1) || (isEmptyNode && !cd.isJSON))  {
             if ( !isEmptyNode ) { theContained = contents[0]; }
-            if ( cd.isJSON || isAdjustingPath ) {
+            if ( cd.isJSON || isPathDefined ) {
                 nodeName = node.nodeName.toLowerCase();
                 cd.isFormElementNode =
                     (nodeName === 'input') || (nodeName === 'textarea');
@@ -773,18 +882,19 @@ Horn.prototype = {
     },
 
     /**
-     *  Determines if the given Horn property path is 'context-altering'.
+     *  Determines if a given value represents a property path.
      *  <p>
      *  The 'path' argument is converted to a <code>String</code> before
      *  examination.
      *
-     *  @param {Object} path an object that represents a Horn property path
+     *  @param {Object} path an object that represents a property path
      *
-     *  @return {Boolean} <code>true</code> if , <code>false</code> otherwise
+     *  @return {Boolean} <code>true</code> if the given path is a defined
+     *      property path, <code>false</code> otherwise
      *
      *  @methodOf Horn.prototype
      */
-    isAdjustingPath: function ( path ) {
+    isPathDefined: function ( path ) {
         return this.isDefinedNotNull( path) && ((path + "").trim() !== '');
     },
 
@@ -874,13 +984,13 @@ Horn.prototype = {
      *  Execute a callback function for each token of a split
      *  <code>String</code>.
      *  <p>
-     *  The value is converted to a string and then split, using either a
-     *  delimiter supplied or the default delimiter " ".
+     *  The value is converted to a <code>String</code> and then split, using
+     *  either a supplied delimiter or the default delimiter, " ".
      *
      *  @param value converted to a <code>String</code> and then split
-     *  @param {Function} a function with the following signature ( i, token )
-     *      - where i is the index of the token (zero based) and token is the
-     *      current token
+     *  @param {Function} callback a function with the following signature
+     *  <code>( i, token )</code> - where i is the index of the token
+     *      (zero based), and token is the current token
      *  @param {String} [delimiter] a delimiter used to split 'object's
      *
      *  @methodOf Horn.prototype
@@ -897,8 +1007,8 @@ Horn.prototype = {
     },
 
     /**
-     *  Converts an Horn property path in internal form to its external
-     *  (JavaScript) representation.
+     *  Converts an Horn property path in internal form to its external,
+     *  JavaScript representation.
      *  <p>
      *  For example: <code>horn.toExternalPath( 'x-1-2-3-y-2-z') ===
      *  'x[1][2][3].y[2].z'.</code>
@@ -912,15 +1022,15 @@ Horn.prototype = {
     },
 
     /**
-     *  Converts a Horn property path in external (JavaScript) form to that used
+     *  Converts a property path in external JavaScript form to that used
      *  internally.
      *  <p>
      *  For example: <code>horn.toInternalPath('x[1][2][3].y[2].z') ===
-     *  'x-1-2-3-y-2-z'.</code>
+     *  'x-1-2-3-y-2-z'</code>.
      *  <p>
-     *  This function tolerates extraneous leading '-' chars.
+     *  This function tolerates extraneous leading '-' characters.
      *
-     *  @param {String} path external Horn property path to convert
+     *  @param {String} path the external property path to convert
      *
      *  @methodOf Horn.prototype
      */
@@ -944,15 +1054,15 @@ Horn.prototype = {
      *  @param value the root of the object graph to traverse
      *  @param {Function} callback a callback function that will be executed for
      *      each value of the object graph encountered, it should have the
-     *      following signature: ( path, value, context, propName) where, 'path'
-     *      is the value's Horn path within its container, 'value' is the
-     *      current value found, 'context' is the object in which the value can
-     *      be found and 'key' is the property name within 'context' that the
-     *      value can be found.
+     *      following signature, <code>( path, value, context, propName)</code>,
+     *      where 'path' is the value's property path within its container,
+     *      'value' is the current value found, 'context' is the object in which
+     *      the value can be found and 'key' is the property name within
+     *      'context' that the value can be found.
      *  @param {String} [path] an optional property path that will be prefixed
      *      to every callback reported property path constructed
-     *  @param [context] internal use only - no value required
-     *  @param [propName] internal use only  - no value required
+     *  @param [context] internal (recursive) use only - do not supply a value
+     *  @param [propName] internal (recursive) use only  - do not supply a value
      *
      *  @methodOf Horn.prototype
      */
@@ -966,8 +1076,7 @@ Horn.prototype = {
 
     /**
      *  Walks the DOM and executes a callback for each node visited, building
-     *  up a Horn property path as it goes by extracting DOM nodes' property
-     *  path indicators.
+     *  up a property paths as it goes.
      *  <p>
      *  This function takes a property path stem it prepends to all Horn paths
      *  constructed.
@@ -978,27 +1087,27 @@ Horn.prototype = {
      *  @param {Element} node the node to start the walk from, this node is
      *      implicitly visited (the callback will not be executed in respect
      *      of it)
-     *  @param {Function} fn the callback function with the following signature
-     *      ( node, path )  - where node is the current node being visited and
-     *      path is its full property path (relative to the first DOM node
-     *      visited and the path argument to <code>walkDOM(...)</code>
-     *      proper.
+     *  @param {Function} callback the callback function with the following
+     *      signature (node, path)  - where node is the current node being
+     *      visited and path is its full property path (relative to the first
+     *      DOM node visited and the path argument to <code>walkDOM(...)</code>
+     *      proper
      *  @param {String} [path] the Horn property path stem that will be
      *      prepended to each Horn path constructed
      *
      *  @methodOf Horn.prototype
      */
-    walkDOM: function( node, fn, path ) {
+    walkDOM: function( node, callback, path ) {
         if ( !this.isDefinedNotNull( path) ) { path = ''; }
         path = this.combinePaths( path, this.pathIndicator(node));
-        if ( fn( node, path) === true ) {
+        if ( callback( node, path) === true ) {
             this.each( $(node).children(), function( i, n ) {
-                this.walkDOM( n, fn, path); }, this);
+                this.walkDOM( n, callback, path); }, this);
         }
     }
 };
 
-var horn = new Horn();
+window.horn = new Horn();
 
 $(function() {
     if ( horn.option( "readOnly") === true ) {
