@@ -268,22 +268,17 @@ class HornTagLib {
             throwTagError( """One of, or both of the "path" and "json" attributes must be supplied for the "<hornTag>" tag when not in templating mode.""")
         }
 
-        if ( !request.hasProperty( HornTagLib.KEY_DEPTH) ) {
+        if ( request[ HornTagLib.KEY_DEPTH] == null ) {
             request[ HornTagLib.KEY_DEPTH] = 0
         }
         def isLevel0 = request[ HornTagLib.KEY_DEPTH] == 0
-
-
-
-
-        def isAbsolutePath = path && path.startsWith( "/")
-        if ( isAbsolutePath ) { if ( !html5 ) { path = path.substring( 1) } }
-            else {
-                if ( isLevel0 && path ) {
-                    if ( html5 ) { path = "/$path" }
-                    isAbsolutePath = true
-                }
+        def isAbsolutePath = path?.startsWith( "/")
+        if ( !isAbsolutePath ) {
+            if ( isLevel0 && path ) {
+                path = "/$path"
+                isAbsolutePath = true
             }
+        }
 
         request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] + 1
         def bodyValue = body()
