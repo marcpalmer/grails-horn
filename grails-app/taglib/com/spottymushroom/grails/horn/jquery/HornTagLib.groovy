@@ -271,7 +271,7 @@ class HornTagLib {
         if ( !request.hasProperty( HornTagLib.KEY_DEPTH) ) {
             request[ HornTagLib.KEY_DEPTH] = 0
         }
-        def isLevel0 = request.hasProperty( HornTagLib.KEY_DEPTH) == 0
+        def isLevel0 = request[ HornTagLib.KEY_DEPTH] == 0
 
 
 
@@ -285,9 +285,9 @@ class HornTagLib {
                 }
             }
 
-        request.hasProperty( HornTagLib.KEY_DEPTH)++
+        request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] + 1
         def bodyValue = body()
-        request.hasProperty( HornTagLib.KEY_DEPTH)--
+        request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] - 1
         out << "<"
         out << tag
 
