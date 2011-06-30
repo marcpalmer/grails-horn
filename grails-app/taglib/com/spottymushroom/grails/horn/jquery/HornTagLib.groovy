@@ -273,11 +273,9 @@ class HornTagLib {
         }
         def isLevel0 = request[ HornTagLib.KEY_DEPTH] == 0
         def isAbsolutePath = path?.startsWith( "/")
-        if ( !isAbsolutePath ) {
-            if ( isLevel0 && path ) {
-                path = "/$path"
-                isAbsolutePath = true
-            }
+        if ( !isAbsolutePath && isLevel0 && path ) {
+            path = "/$path"
+            isAbsolutePath = true
         }
 
         request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] + 1
@@ -308,6 +306,7 @@ class HornTagLib {
         def emptyBodyClass = attrs.remove('emptyBodyClass')?.trim()
         HornTagLib.addAttributeValueIf( emptyBodyClass, newClassAttrs,
             (bodyValue?.trim() == '') && emptyBodyClass && !templating)
+
         HornTagLib.addAttributeValueIf( hiddenCSSClass, newClassAttrs,
             isJSON || (isLevel0 && templating))
 

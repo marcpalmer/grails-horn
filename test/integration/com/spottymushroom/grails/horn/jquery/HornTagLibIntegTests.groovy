@@ -564,6 +564,14 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
         assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path">body</horn:div>""", """<div class="horn _path">body</div>""", false)
     }
 
+    void testEmptyBodyClassNotTemplating() {
+        assertTemplateResult( """<horn:templating value="false"/><horn:span class="time" path="/time" emptyBodyClass="hidden"></horn:span>""", """<span class="time horn _time hidden"></span>""", false)
+        assertTemplateResult( """<horn:templating value="false"/><horn:span class="time" path="/time" emptyBodyClass="hidden">s</horn:span>""", """<span class="time horn _time">s</span>""", false)
+    }
+    void testEmptyBodyClassTemplating() {
+        assertTemplateResult( """<horn:templating value="true"/><horn:div path="/a"><horn:span class="time" path="/time" emptyBodyClass="hidden"></horn:span></horn:div>""", """<div class="_a hidden"><span class="time _time"></span></div>""", false)
+    }
+
     void testEncodePath() {
         assertTemplateResult( """<horn:encodePath path="/root.sub[0]" />""", """_root-sub-0""", false)
         assertTemplateResult( """<horn:encodePath path="/root.sub[0]" />""", """_root-sub-0""", true)
