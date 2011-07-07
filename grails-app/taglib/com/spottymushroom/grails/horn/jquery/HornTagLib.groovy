@@ -2,8 +2,6 @@ package com.spottymushroom.grails.horn.jquery
 
 /**
  *  Grails Horn Plugin Tag Library
- *  <p>
- *  Horn-domain specific tags and utility closures.
  *
  *  @author Chris Denman
  *  @author Marc Palmer
@@ -21,30 +19,33 @@ class HornTagLib {
      *  Request key for the templating option.
      */
     static KEY_TEMPLATING = HornTagLib.KEY_PREFIX_HORNTAGLIB + ".templating"
+
+    /**
+     *  Request key for keeping track of the current tag recursion depth.
+     */
     static KEY_DEPTH = HornTagLib.KEY_PREFIX_HORNTAGLIB + ".depth"
 
-    static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9X]+)\])/
+    static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9]+)\])/ // @todo special handling for templates?
     static PATTERN_PPN_DEREFERENCE = /\./
 
-    static PATTERN_PP_ARRAY_INDICES = /(-([0-9X]+))/
+    static PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/ // @todo special handling for templates?
     static PATTERN_PP_DEREFERENCE = /-/
 
     /**
      *  Remove a named attribute from a collection of attributes 
      *  (name/value pairs).
      *  <p>
-     *  If the attriubte was located and removed, its former value is returned
-     *  else, the <code>defaultValue</code> supplied is returned, else 
-     *  <code>""</code>.
+     *  If the attribute was located and removed, its former value is returned
+     *  else, the 'defaultValue' supplied is returned, else <code>""</code>.
      *
      *  @param attributes the attributes from which to remove the given named 
-     *      attriubte
-     *  @param attributeName the name of the attriubute to remove 
+     *      attribute
+     *  @param attributeName the name of the attribute to remove 
      *  @param defaultValue the default value returned if an attribute was not 
      *      removed (default value <code>""</code>)
      *      
-     *  @return the value of the attribute just removed, else 
-     *      <code>defaultValue</code> is returned
+     *  @return the value of the attribute just removed, else 'defaultValue' is 
+     *      returned
      */
     static removeAttribute( attributes, attributeName, defaultValue = "" ) {
         def attributeValue = attributes.remove( attributeName)
@@ -53,7 +54,7 @@ class HornTagLib {
     }
 
     /**
-     *  Add an attriubte to a given collection if <code>condition == true</code>.
+     *  Add an attribute to a given collection if <code>condition == true</code>.
      * 
      *  @param attributeName the name of the attribute to add 
      *  @param attributeValue the value of the attribute to add
@@ -61,7 +62,7 @@ class HornTagLib {
      *  @param condition if <code>true</code> the given attribute will be added, 
      *      false otherwise 
      *  
-     *  @return the attribute collection <code>attrs</code> passed in will be 
+     *  @return the attribute collection 'attrs' passed in will be 
      *      returned
      */
     static addAttributeIf( attributeName, attributeValue, attrs = [],
@@ -77,7 +78,7 @@ class HornTagLib {
      *  The value is not added if it is already contained in 
      *  <code>attributeValues</code>.    
      * 
-     *  @param attributeValue the attriubte value to add 
+     *  @param attributeValue the attribute value to add 
      *      (if not already present)
      *  @param attributeValues the attribute value collection (optional with 
      *      default value <code>[]></code>
@@ -95,7 +96,7 @@ class HornTagLib {
     }
 
     /**
-     *  Add an attribute value to a collection of attriubte values if
+     *  Add an attribute value to a collection of attribute values if
      *  <code>condition</code> is <code>true</code>.
      *  <p>
      *  If the attribute value is already present in the collection, calling
@@ -103,12 +104,12 @@ class HornTagLib {
      *  <code>condition</code>.
      *
      *  @param attributeValue the attribute value to add
-     *  @param attributeValues the attrituve value collection to add to
+     *  @param attributeValues the attribute value collection to add to
      *  @param condition if <code>true</code>, add the attribute value,
      *      otherwise don't.
      *
      *  @return the possibly altered attribute value collection
-     *      <code>attributeValues</code>
+     *  'attributeValues'
      */
     static addAttributeValueIf( attributeValue, attributeValues = [],
         condition = false ) {
@@ -129,7 +130,7 @@ class HornTagLib {
      *  @param attributeValues the attribute value collection to add to
      * 
      *  @return the possibly altered attribute value collection
-     *      <code>attributeValues</code>
+     *      'attributeValues'
      */
     static splitAddAttributeValues( value, attributeValues = [] ) {
         value.toString().split( " ").each { token ->
@@ -158,7 +159,7 @@ class HornTagLib {
     /**
      *  Output the given set of attributes.
      *  <p>
-     *  Nothing is done if <code>attrs</code> is empty.    
+     *  Nothing is done if 'attrs' is empty.    
      * 
      *  @param out the <code>PrintWriter<code> to write to @todo check this
      *  @param attrs the attributes to output
@@ -176,12 +177,13 @@ class HornTagLib {
     }
 
     /**
-     *  Determines if the given attribute value represents a Boolean 'true' value.
+     *  Determines if the given attribute value represents a Boolean 'true'
+     *  value.
      *
      *  @param val the attribute value to test
      *
      *  @return <code>true</code> if the given attribute value represents
-     *      <cdoe>Boolean true</code>, <cdoe>false</code> otherwise
+     *      <code>Boolean true</code>, <code>false</code> otherwise
      */
     static isAttributeTruth( val ) {
         !val ? false :
@@ -246,6 +248,8 @@ class HornTagLib {
      *  <p>
      *  Writes out the converted tag.
      *
+     *  @param attrs
+     *  @param body
      *  @param attrs.path the value to convert
      *
      *  @throws GrailsTagException if the <code>path</code> attribute is not
@@ -257,13 +261,28 @@ class HornTagLib {
             safeRemoveAttribute( attrs, 'path', 'encodePath'))
     }
 
+    /**
+     *  Outputs an HTML tag decorated with Horn indicators.
+     *  <p>
+     *  This method has two distinct modes of operation, controlled by setting
+     *  templating mode using the <code>templating</code> tag.
+     *
+     *  @param attrs
+     *  @param body
+     *  @param attrs.tag the name of the tag to output
+     *  @param attrs.path the horn path indicator (if not json)
+     *  @param attrs.json 'true' if this tag is for outputting json data
+     *  @param attrs.emptyBodyClass optional class attribute to output if the
+     *      body is empty and we are not in templating mode
+     */
     def hornTag = { attrs, body ->
         def html5 = grailsApplication.config.useHTML5 == true
-        def hiddenCSSClass = grailsApplication.config.hiddenCSSClass ?: 'hidden'
+        def hiddenClass = grailsApplication.config.hiddenClass ?: 'hidden'
         def templating = request[ HornTagLib.KEY_TEMPLATING] == true
         def tag = safeRemoveAttribute( attrs, 'tag', 'hornTag')
         def path = HornTagLib.removeAttribute( attrs, "path")
-        def isJSON = HornTagLib.isAttributeTruth( HornTagLib.removeAttribute( attrs, "json"))
+        def isJSON = HornTagLib.isAttributeTruth( HornTagLib.removeAttribute(
+            attrs, "json"))
         if ( !path && !isJSON ) {
             throwTagError( """One of, or both of the "path" and "json" attributes must be supplied for the "<hornTag>" tag when not in templating mode.""")
         }
@@ -284,8 +303,8 @@ class HornTagLib {
         out << "<"
         out << tag
 
-        def newClassAttrs =
-            splitAddAttributeValues( HornTagLib.removeAttribute( attrs, "class"))
+        def newClassAttrs = splitAddAttributeValues(
+            HornTagLib.removeAttribute( attrs, "class"))
 
         if ( html5 ) {
             HornTagLib.addAttributeIf( "data-horn", path, attrs,
@@ -303,11 +322,11 @@ class HornTagLib {
             HornTagLib.addAttributeValueIf( "data-json", newClassAttrs, isJSON)
         }
 
-        def emptyBodyClass = attrs.remove('emptyBodyClass')?.trim()
+        def emptyBodyClass = attrs.remove('emptyBodyClass')?.trim() ?: 'hidden'
         HornTagLib.addAttributeValueIf( emptyBodyClass, newClassAttrs,
             (bodyValue?.trim() == '') && emptyBodyClass && !templating)
 
-        HornTagLib.addAttributeValueIf( hiddenCSSClass, newClassAttrs,
+        HornTagLib.addAttributeValueIf( hiddenClass, newClassAttrs,
             isJSON || (isLevel0 && templating))
 
         HornTagLib.outputAttribute( out, "class", newClassAttrs)
@@ -322,6 +341,16 @@ class HornTagLib {
     }
 
     /**
+     *  Helper tag for outputting JSON data encoded as a hidden span (or other)
+     *  tag.
+     *  <p>
+     *  The actual tag used can be overriden by setting the 'attrs.tag'
+     *  attribute.
+     *
+     *  @param body
+     *  @param attrs
+     *  @param attrs.tag (optional) the name of an alternative tag to use
+     *      (instead of the default, 'span')
      *
      */
     def json = { attrs, body ->
@@ -331,11 +360,18 @@ class HornTagLib {
     }
 
     /**
+     *  Switch templating mode on or off.
+     *
+     *  @param body
+     *  @param attrs
+     *  @param attrs.value if this attribute value is a
+     *      <code>Boolean true</code> or <code>String</code> 'true', templating
+     *      mode is switched on, otherwise it is turned off
      *
      */
     def templating = { attrs, body ->
-        request[ HornTagLib.KEY_TEMPLATING] =
-            HornTagLib.isAttributeTruth( HornTagLib.removeAttribute( attrs, "value"))
+        request[ HornTagLib.KEY_TEMPLATING] = HornTagLib.isAttributeTruth(
+            HornTagLib.removeAttribute( attrs, "value"))
     }
 
     def a =         { attrs, body ->

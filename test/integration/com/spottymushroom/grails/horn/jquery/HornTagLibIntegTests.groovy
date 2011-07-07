@@ -46,7 +46,7 @@ import grails.test.GroovyPagesTestCase
 //
 //    void testTemplateOmitsHorn() {
 //        tagLib.metaClass.getGrailsApplication = { ->
-//            [config: [hiddenCSSClass: "hidden"]] }
+//            [config: [hiddenClass: "hidden"]] }
 //        tagLib.templating( [value: "true"], { args -> "" })
 //        tagLib.templating( [value: "false"], { args -> "" })
 //        tagLib.div(
@@ -63,7 +63,7 @@ import grails.test.GroovyPagesTestCase
 //            def passed = false
 //            try {
 //                tagLib.metaClass.getGrailsApplication = { ->
-//                    [config: [hiddenCSSClass: "hidden"]] }
+//                    [config: [hiddenClass: "hidden"]] }
 //                def attrs = [:]
 //                attrs.putAll( attrRecord.attrs)
 //                attrs.= 'emptyBodyClass'
@@ -85,7 +85,7 @@ import grails.test.GroovyPagesTestCase
 //            attrs = [:]
 //            try {
 //                tagLib.metaClass.getGrailsApplication = { ->
-//                    [config: [hiddenCSSClass: "hidden"]] }
+//                    [config: [hiddenClass: "hidden"]] }
 //                attrs.putAll( attrRecord.attrs)
 //                attrs.= 'emptyBodyClass'
 //                tagLib.hornTag( attrs, {args -> ""})
@@ -156,15 +156,33 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagAndPathAttributesHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="path"></horn:hornTag>""", """<div data-horn="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="path"></horn:hornTag>""",
+                              """<div class="hidden" data-horn="/path"></div>""")
+    }
+
+    void testHornTagTagAndPathAttributesEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="yyy" tag="div" path="path"></horn:hornTag>""",
+                              """<div class="yyy" data-horn="/path"></div>""")
     }
 
     void testHornTagRootLevelAbsolutePathHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path"></horn:hornTag>""", """<div data-horn="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path"></horn:hornTag>""",
+                              """<div class="hidden" data-horn="/path"></div>""")
+    }
+
+    void testHornTagRootLevelAbsolutePathEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="xxx" tag="div" path="/path"></horn:hornTag>""",
+                              """<div class="xxx" data-horn="/path"></div>""")
     }
 
     void testHornTagRootLevelRelativePathHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="path"></horn:hornTag>""", """<div data-horn="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="path"></horn:hornTag>""",
+                              """<div class="hidden" data-horn="/path"></div>""")
+    }
+
+    void testHornTagRootLevelRelativePathEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="www" tag="div" path="path"></horn:hornTag>""",
+                              """<div class="www" data-horn="/path"></div>""")
     }
 
     void testHornTagJSONAttributeOnlyHTML() {
@@ -173,7 +191,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
 
     // @todo maybe trap this case where no body value and json
     void testHornTagTagAndJSONAttributesHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" json="true"></horn:hornTag>""", """<div class="hidden" data-horn-json="true"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" json="true"></horn:hornTag>""",
+                              """<div class="hidden" data-horn-json="true"></div>""")
     }
 
     void testHornTagPathAndJSONAttributesHTML() {
@@ -181,7 +200,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagPathAndJSONAttributesHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="path" json="true"></horn:hornTag>""", """<div class="hidden" data-horn-json="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="path" json="true"></horn:hornTag>""",
+                              """<div class="hidden" data-horn-json="/path"></div>""")
     }
 
     void testHornTagClassAttributeOnlyHTML() {
@@ -197,11 +217,18 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassAndPathAttributesHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path"></horn:hornTag>""", """<div class="a b c" data-horn="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path"></horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn="/path"></div>""")
+    }
+
+    void testHornTagTagClassAndPathAttributesEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="www" tag="div" class="a b c" path="path"></horn:hornTag>""",
+                              """<div class="a b c www" data-horn="/path"></div>""")
     }
 
     void testHornTagTagClassAndJSONAttributesHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" json="true"></horn:hornTag>""", """<div class="a b c hidden" data-horn-json="true"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" json="true"></horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn-json="true"></div>""")
     }
 
     void testHornTagClassPathAndJSONAttributesHTML() {
@@ -209,7 +236,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassPathAndJSONAttributesHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path" json="true"></horn:hornTag>""", """<div class="a b c hidden" data-horn-json="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path" json="true"></horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn-json="/path"></div>""")
     }
 
     void testHornTagPathAttributeOnlyRootHTML() {
@@ -217,7 +245,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagAndPathAttributesRootHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path"></horn:hornTag>""", """<div data-horn="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path"></horn:hornTag>""",
+                              """<div class="hidden" data-horn="/path"></div>""")
+    }
+
+    void testHornTagTagAndPathAttributesRootEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="sss" tag="div" path="/path"></horn:hornTag>""",
+                              """<div class="sss" data-horn="/path"></div>""")
     }
 
     void testHornTagPathAndJSONAttributesRootHTML() {
@@ -225,7 +259,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagPathAndJSONAttributesRootHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path" json="true"></horn:hornTag>""", """<div class="hidden" data-horn-json="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path" json="true"></horn:hornTag>""",
+                              """<div class="hidden" data-horn-json="/path"></div>""")
     }
 
     void testHornTagClassAndPathAttributesRootHTML() {
@@ -233,18 +268,28 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassAndPathAttributesRootHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path"></horn:hornTag>""", """<div class="a b c" data-horn="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path"></horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn="/path"></div>""")
     }
+
+    void testHornTagTagClassAndPathAttributesRootEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="hhh" tag="div" class="a b c" path="/path"></horn:hornTag>""",
+                              """<div class="a b c hhh" data-horn="/path"></div>""")
+    }
+
     void testHornTagTagClassPathAndJSONAttributesRootHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path" json="true"></horn:hornTag>""", """<div class="a b c hidden" data-horn-json="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path" json="true"></horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn-json="/path"></div>""")
     }
 
     void testNestedDivTagsHTML() {
-        assertTemplateResult( """<horn:div path="/path"><horn:div path="subpath">bodyValue</horn:div></horn:div>""", """<div data-horn="/path"><div data-horn="subpath">bodyValue</div></div>""")
+        assertTemplateResult( """<horn:div path="/path"><horn:div path="subpath">bodyValue</horn:div></horn:div>""",
+                              """<div data-horn="/path"><div data-horn="subpath">bodyValue</div></div>""")
     }
 
     void testPassThroughAttributesHMTL() {
-        assertTemplateResult( """<horn:hornTag hungry="CaT" tag="div" class="a b c" path="/path" JSON="TRUE" json="true"></horn:hornTag>""", """<div class="a b c hidden" hungry="CaT" JSON="TRUE" data-horn-json="/path"></div>""")
+        assertTemplateResult( """<horn:hornTag hungry="CaT" tag="div" class="a b c" path="/path" JSON="TRUE" json="true"></horn:hornTag>""",
+                              """<div class="a b c hidden" hungry="CaT" JSON="TRUE" data-horn-json="/path"></div>""")
     }
 
     void testHornTagNoAttributesCSS() {
@@ -264,7 +309,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagAndPathCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="path"></horn:hornTag>""", """<div class="horn _path"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" path="path"></horn:hornTag>""",
+                              """<div class="horn _path hidden"></div>""", false)
+    }
+
+    void testHornTagTagAndPathEmptyBodyClassCSS() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="dddd" tag="div" path="path"></horn:hornTag>""",
+                              """<div class="horn _path dddd"></div>""", false)
     }
 
     void testHornTagJSONOnlyCSS() {
@@ -276,7 +327,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagPathAndJSONCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="path" json="true"></horn:hornTag>""", """<div class="horn data-json _path hidden"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" path="path" json="true"></horn:hornTag>""",
+                              """<div class="horn data-json _path hidden"></div>""", false)
     }
 
     void testHornTagClassOnlyCSS() {
@@ -288,7 +340,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassAndPathCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path"></horn:hornTag>""", """<div class="a b c horn _path"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path"></horn:hornTag>""",
+                              """<div class="a b c horn _path hidden"></div>""", false)
+    }
+
+    void testHornTagTagClassAndPathEmptyBodyClassCSS() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="eee" tag="div" class="a b c" path="path"></horn:hornTag>""",
+                              """<div class="a b c horn _path eee"></div>""", false)
     }
 
     void testHornTagClassAndJSONCSS() {
@@ -296,7 +354,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassAndJSONCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" json="true"></horn:hornTag>""", """<div class="a b c horn data-json hidden"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" json="true"></horn:hornTag>""",
+                              """<div class="a b c horn data-json hidden"></div>""", false)
     }
 
     void testHornTagClassPathAndJSONCSS() {
@@ -304,7 +363,8 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassPathAndJSONCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path" json="true"></horn:hornTag>""", """<div class="a b c horn data-json _path hidden"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="path" json="true"></horn:hornTag>""",
+                              """<div class="a b c horn data-json _path hidden"></div>""", false)
     }
 
     void testHornTagPathOnlyAbsoluteCSS() {
@@ -312,7 +372,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagAndPathAbsoluteCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path"></horn:hornTag>""", """<div class="horn _path"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path"></horn:hornTag>""",
+                              """<div class="horn _path hidden"></div>""", false)
+    }
+
+    void testHornTagTagAndPathAbsoluteCSSEmptyBodyClass() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="eee" tag="div" path="/path"></horn:hornTag>""",
+                              """<div class="horn _path eee"></div>""", false)
     }
 
     void testHornTagPathAndJSONAbsoluteCSS() {
@@ -320,11 +386,18 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagPathAndJSONAbsoluteCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path" json="true"></horn:hornTag>""", """<div class="horn data-json _path hidden"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path" json="true"></horn:hornTag>""",
+                              """<div class="horn data-json _path hidden"></div>""", false)
     }
 
     void testHornTagTagClassAndPathAbsoluteCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path"></horn:hornTag>""", """<div class="a b c horn _path"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path"></horn:hornTag>""",
+                              """<div class="a b c horn _path hidden"></div>""", false)
+    }
+
+    void testHornTagTagClassAndPathAbsoluteEmptyBodyClassCSS() {
+        assertTemplateResult( """<horn:hornTag emptyBodyClass="ppp" tag="div" class="a b c" path="/path"></horn:hornTag>""",
+                              """<div class="a b c horn _path ppp"></div>""", false)
     }
 
     void testHornTagClassPathAndJSONAbsoluteCSS() {
@@ -332,19 +405,23 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testHornTagTagClassPathAndJSONAbsoluteCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path" json="true"></horn:hornTag>""", """<div class="a b c horn data-json _path hidden"></div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" class="a b c" path="/path" json="true"></horn:hornTag>""",
+                              """<div class="a b c horn data-json _path hidden"></div>""", false)
     }
 
     void testPassThroughAttributesCSS() {
-        assertTemplateResult( """<horn:hornTag hungry="CaT" tag="div" class="a b c" path="/path" JSON="TRUE" json="true"></horn:hornTag>""", """<div class="a b c horn data-json _path hidden" hungry="CaT" JSON="TRUE"></div>""", false)
+        assertTemplateResult( """<horn:hornTag hungry="CaT" tag="div" class="a b c" path="/path" JSON="TRUE" json="true"></horn:hornTag>""",
+                              """<div class="a b c horn data-json _path hidden" hungry="CaT" JSON="TRUE"></div>""", false)
     }
 
     void testDivRewritesPathsCSS() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path[2][3].x.y[3]">bVal</horn:hornTag>""", """<div class="horn _path-2-3-x-y-3">bVal</div>""", false)
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path[2][3].x.y[3]">bVal</horn:hornTag>""",
+                              """<div class="horn _path-2-3-x-y-3">bVal</div>""", false)
     }
 
     void testDivRewritesPathsHTML() {
-        assertTemplateResult( """<horn:hornTag tag="div" path="/path[2][3].x.y[3]">bVal</horn:hornTag>""", """<div data-horn="/path[2][3].x.y[3]">bVal</div>""")
+        assertTemplateResult( """<horn:hornTag tag="div" path="/path[2][3].x.y[3]">bVal</horn:hornTag>""",
+                              """<div data-horn="/path[2][3].x.y[3]">bVal</div>""")
     }
 
     void testTemplateNoAttributes() {
@@ -368,11 +445,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagPathCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" >body</horn:hornTag>""", """<div class="_path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" >body</horn:hornTag>""",
+                              """<div class="_path hidden">body</div>""", false)
     }
 
     void testTemplatingTagPathHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" >body</horn:hornTag>""", """<div class="hidden" data-horn="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" >body</horn:hornTag>""",
+                              """<div class="hidden" data-horn="/path">body</div>""", true)
     }
 
     void testTemplatingJSONOnly() {
@@ -380,11 +459,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagJSONCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" json="true">body</horn:hornTag>""", """<div class="data-json hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" json="true">body</horn:hornTag>""",
+                              """<div class="data-json hidden">body</div>""", false)
     }
 
     void testTemplatingTagJSONHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" json="true">body</horn:hornTag>""", """<div class="hidden" data-horn-json="true">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" json="true">body</horn:hornTag>""",
+                              """<div class="hidden" data-horn-json="true">body</div>""", true)
     }
 
     void testTemplatingPathJSON() {
@@ -392,11 +473,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagPathJSONCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" json="true">body</horn:hornTag>""", """<div class="data-json _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" json="true">body</horn:hornTag>""",
+                              """<div class="data-json _path hidden">body</div>""", false)
     }
 
     void testTemplatingTagPathJSONHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" json="true">body</horn:hornTag>""", """<div class="hidden" data-horn-json="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="path" json="true">body</horn:hornTag>""",
+                              """<div class="hidden" data-horn-json="/path">body</div>""", true)
     }
 
     void testTemplatingClassOnly() {
@@ -412,11 +495,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagClassPathCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path">body</horn:hornTag>""", """<div class="a b c _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path">body</horn:hornTag>""",
+                              """<div class="a b c _path hidden">body</div>""", false)
     }
 
     void testTemplatingTagClassPathHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path">body</horn:hornTag>""", """<div class="a b c hidden" data-horn="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path">body</horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn="/path">body</div>""", true)
     }
 
     void testTemplatingClassJSON() {
@@ -424,11 +509,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagClassJSONCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" json="true">body</horn:hornTag>""", """<div class="a b c data-json hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" json="true">body</horn:hornTag>""",
+                              """<div class="a b c data-json hidden">body</div>""", false)
     }
 
     void testTemplatingTagClassJSONHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" json="true">body</horn:hornTag>""", """<div class="a b c hidden" data-horn-json="true">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" json="true">body</horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn-json="true">body</div>""", true)
     }
 
     void testTemplatingClassPathJSON() {
@@ -436,11 +523,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagClassPathJSONCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path" json="true">body</horn:hornTag>""", """<div class="a b c data-json _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path" json="true">body</horn:hornTag>""",
+                              """<div class="a b c data-json _path hidden">body</div>""", false)
     }
 
     void testTemplatingTagClassPathJSONHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path" json="true">body</horn:hornTag>""", """<div class="a b c hidden" data-horn-json="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="path" json="true">body</horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn-json="/path">body</div>""", true)
     }
 
     void testTemplatingPathOnlyAbsolute() {
@@ -448,11 +537,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagPathAbsoluteCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path">body</horn:hornTag>""", """<div class="_path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path">body</horn:hornTag>""",
+                              """<div class="_path hidden">body</div>""", false)
     }
 
     void testTemplatingTagPathAbsoluteHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path">body</horn:hornTag>""", """<div class="hidden" data-horn="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path">body</horn:hornTag>""",
+                              """<div class="hidden" data-horn="/path">body</div>""", true)
     }
 
     void testTemplatingPathJSONAbsolute() {
@@ -460,11 +551,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagPathJSONAbsoluteCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path" json="true">body</horn:hornTag>""", """<div class="data-json _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path" json="true">body</horn:hornTag>""",
+                              """<div class="data-json _path hidden">body</div>""", false)
     }
 
     void testTemplatingTagPathJSONAbsoluteHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path" json="true">body</horn:hornTag>""", """<div class="hidden" data-horn-json="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" path="/path" json="true">body</horn:hornTag>""",
+                              """<div class="hidden" data-horn-json="/path">body</div>""", true)
     }
 
     void testTemplatingClassPathAbsolute() {
@@ -472,11 +565,13 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagClassPathAbsoluteCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path">body</horn:hornTag>""", """<div class="a b c _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path">body</horn:hornTag>""",
+                              """<div class="a b c _path hidden">body</div>""", false)
     }
 
     void testTemplatingTagClassPathAbsoluteHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path">body</horn:hornTag>""", """<div class="a b c hidden" data-horn="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path">body</horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn="/path">body</div>""", true)
     }
 
     void testTemplatingClassPathJSONAbsolute() {
@@ -484,92 +579,124 @@ class HornTagLibIntegTests extends GroovyPagesTestCase {
     }
 
     void testTemplatingTagClassPathJSONAbsoluteCSS() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path" json="true">body</horn:hornTag>""", """<div class="a b c data-json _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path" json="true">body</horn:hornTag>""",
+                              """<div class="a b c data-json _path hidden">body</div>""", false)
     }
 
     void testTemplatingTagClassPathJSONAbsoluteHTML() {
-        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path" json="true">body</horn:hornTag>""", """<div class="a b c hidden" data-horn-json="/path">body</div>""", true)
+        assertTemplateResult( """<horn:templating value="true" /><horn:hornTag tag="div" class="a b c" path="/path" json="true">body</horn:hornTag>""",
+                              """<div class="a b c hidden" data-horn-json="/path">body</div>""", true)
     }
 
     void testJSONNoTagHTML() {
-        assertTemplateResult( """<horn:templating value="false" /><horn:json class="a b c hidden" path="/path">body</horn:json>""", """<span class="a b c hidden" data-horn-json="/path">body</span>""", true)
+        assertTemplateResult( """<horn:templating value="false" /><horn:json class="a b c hidden" path="/path">body</horn:json>""",
+                              """<span class="a b c hidden" data-horn-json="/path">body</span>""", true)
     }
 
     void testJSONNoTagCSS() {
-        assertTemplateResult( """<horn:templating value="false" /><horn:json class="a b c hidden" path="/path">body</horn:json>""", """<span class="a b c hidden horn data-json _path">body</span>""", false)
+        assertTemplateResult( """<horn:templating value="false" /><horn:json class="a b c hidden" path="/path">body</horn:json>""",
+                              """<span class="a b c hidden horn data-json _path">body</span>""", false)
     }
 
     void testJSONNoTagJSONFalseHTML() {
-        assertTemplateResult( """<horn:json class="a b c" json="false" path="/path">body</horn:json>""", """<span class="a b c hidden" data-horn-json="/path">body</span>""", true)
+        assertTemplateResult( """<horn:json class="a b c" json="false" path="/path">body</horn:json>""",
+                              """<span class="a b c hidden" data-horn-json="/path">body</span>""", true)
     }
 
     void testJSONNoTagJSONFalseCSS() {
-        assertTemplateResult( """<horn:json class="a b c" json="false" path="/path">body</horn:json>""", """<span class="a b c horn data-json _path hidden">body</span>""", false)
+        assertTemplateResult( """<horn:json class="a b c" json="false" path="/path">body</horn:json>""",
+                              """<span class="a b c horn data-json _path hidden">body</span>""", false)
     }
 
     void testJSONOverrideTagHTML() {
-        assertTemplateResult( """<horn:json tag="div" class="a b c" path="/path">body</horn:json>""", """<div class="a b c hidden" data-horn-json="/path">body</div>""", true)
+        assertTemplateResult( """<horn:json tag="div" class="a b c" path="/path">body</horn:json>""",
+                              """<div class="a b c hidden" data-horn-json="/path">body</div>""", true)
     }
 
     void testJSONOverrideTagCSS() {
-        assertTemplateResult( """<horn:json tag="div" class="a b c" path="/path">body</horn:json>""", """<div class="a b c horn data-json _path hidden">body</div>""", false)
+        assertTemplateResult( """<horn:json tag="div" class="a b c" path="/path">body</horn:json>""",
+                              """<div class="a b c horn data-json _path hidden">body</div>""", false)
     }
 
     void testJSONHiddenWithNoBodyHTML() {
-        assertTemplateResult( """<horn:json class="a b c" path="/path"></horn:json>""", """<span class="a b c hidden" data-horn-json="/path"></span>""", true)
+        assertTemplateResult( """<horn:json class="a b c" path="/path"></horn:json>""",
+                              """<span class="a b c hidden" data-horn-json="/path"></span>""", true)
     }
 
     void testJSONHiddenWithNoBodyCSS() {
-        assertTemplateResult( """<horn:json class="a b c" path="/path"></horn:json>""", """<span class="a b c horn data-json _path hidden"></span>""", false)
+        assertTemplateResult( """<horn:json class="a b c" path="/path"></horn:json>""",
+                              """<span class="a b c horn data-json _path hidden"></span>""", false)
     }
 
     void testNestedJSONHTML() {
-        assertTemplateResult( """<horn:div path="/root[0]/index"><horn:div path="sub[0]"><horn:json class="a b c" path="path">{"a": 0}</horn:json></horn:div></horn:div>""", """<div data-horn="/root[0]/index"><div data-horn="sub[0]"><span class="a b c hidden" data-horn-json="path">{"a": 0}</span></div></div>""", true)
+        assertTemplateResult( """<horn:div path="/root[0]/index"><horn:div path="sub[0]"><horn:json class="a b c" path="path">{"a": 0}</horn:json></horn:div></horn:div>""",
+                              """<div data-horn="/root[0]/index"><div data-horn="sub[0]"><span class="a b c hidden" data-horn-json="path">{"a": 0}</span></div></div>""", true)
     }
 
     void testNestedJSONCSS() {
-        assertTemplateResult( """<horn:div path="/root[0].index"><horn:div path="sub[0]"><horn:json class="a b c" path="path">{"a": 0}</horn:json></horn:div></horn:div>""", """<div class="horn _root-0-index"><div class="_sub-0"><span class="a b c data-json _path hidden">{"a": 0}</span></div></div>""", false)
+        assertTemplateResult( """<horn:div path="/root[0].index"><horn:div path="sub[0]"><horn:json class="a b c" path="path">{"a": 0}</horn:json></horn:div></horn:div>""",
+                              """<div class="horn _root-0-index"><div class="_sub-0"><span class="a b c data-json _path hidden">{"a": 0}</span></div></div>""", false)
     }
 
     void testEmptyBodyClassNoneSpecifiedNotJSONHTML() {
-        assertTemplateResult( """<horn:div path="/path"></horn:div>""", """<div data-horn="/path"></div>""", true)
+        assertTemplateResult( """<horn:div path="/path"></horn:div>""",
+                              """<div class="hidden" data-horn="/path"></div>""", true)
+    }
 
+    void testEmptyBodyClassNoneSpecifiedNotJSONEmptyBodyClassHTML() {
+        assertTemplateResult( """<horn:div emptyBodyClass="aaa" path="/path"></horn:div>""",
+                              """<div class="aaa" data-horn="/path"></div>""", true)
     }
 
     void testEmptyBodyClassNoneSpecifiedNotJSONCSS() {
-        assertTemplateResult( """<horn:div path="/path"></horn:div>""", """<div class="horn _path"></div>""", false)
+        assertTemplateResult( """<horn:div path="/path"></horn:div>""",
+                              """<div class="horn _path hidden"></div>""", false)
+    }
+
+    void testEmptyBodyClassNoneSpecifiedNotJSONEmptyBodyClassCSS() {
+        assertTemplateResult( """<horn:div emptyBodyClass="rrr" path="/path"></horn:div>""",
+                              """<div class="horn _path rrr"></div>""", false)
     }
 
     void testEmptyBodyClassHiddenSpecifiedJSONHTML() {
-        assertTemplateResult( """<horn:json emptyBodyClass="hidden" class="a b c hidden" path="/path"></horn:json>""", """<span class="a b c hidden" data-horn-json="/path"></span>""", true)
+        assertTemplateResult( """<horn:json emptyBodyClass="hidden" class="a b c hidden" path="/path"></horn:json>""",
+                              """<span class="a b c hidden" data-horn-json="/path"></span>""", true)
     }
 
     void testEmptyBodyClassHiddenSpecifiedJSONCSS() {
-        assertTemplateResult( """<horn:json emptyBodyClass="hidden" class="a b c hidden" path="/path"></horn:json>""", """<span class="a b c hidden horn data-json _path"></span>""", false)
+        assertTemplateResult( """<horn:json emptyBodyClass="hidden" class="a b c hidden" path="/path"></horn:json>""",
+                              """<span class="a b c hidden horn data-json _path"></span>""", false)
     }
 
     void testEmptyBodyClassEmptySpecifiedHTML() {
-        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path"></horn:div>""", """<div class="empty" data-horn="/path"></div>""", true)
+        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path"></horn:div>""",
+                              """<div class="empty" data-horn="/path"></div>""", true)
     }
 
     void testEmptyBodyClassEmptySpecifiedCSS() {
-        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path"></horn:div>""", """<div class="horn _path empty"></div>""", false)
+        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path"></horn:div>""",
+                              """<div class="horn _path empty"></div>""", false)
     }
 
     void testEmptyBodyClassEmptySpecifiedWithBodyHTML() {
-        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path">body</horn:div>""", """<div data-horn="/path">body</div>""", true)
+        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path">body</horn:div>""",
+                              """<div data-horn="/path">body</div>""", true)
     }
 
     void testEmptyBodyClassEmptySpecifiedWithBodyCSS() {
-        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path">body</horn:div>""", """<div class="horn _path">body</div>""", false)
+        assertTemplateResult( """<horn:div emptyBodyClass="empty" path="/path">body</horn:div>""",
+                              """<div class="horn _path">body</div>""", false)
     }
 
     void testEmptyBodyClassNotTemplating() {
-        assertTemplateResult( """<horn:templating value="false"/><horn:span class="time" path="/time" emptyBodyClass="hidden"></horn:span>""", """<span class="time horn _time hidden"></span>""", false)
-        assertTemplateResult( """<horn:templating value="false"/><horn:span class="time" path="/time" emptyBodyClass="hidden">s</horn:span>""", """<span class="time horn _time">s</span>""", false)
+        assertTemplateResult( """<horn:templating value="false"/><horn:span class="time" path="/time" emptyBodyClass="hidden"></horn:span>""",
+                              """<span class="time horn _time hidden"></span>""", false)
+        assertTemplateResult( """<horn:templating value="false"/><horn:span class="time" path="/time" emptyBodyClass="hidden">s</horn:span>""",
+                              """<span class="time horn _time">s</span>""", false)
     }
     void testEmptyBodyClassTemplating() {
-        assertTemplateResult( """<horn:templating value="true"/><horn:div path="/a"><horn:span class="time" path="/time" emptyBodyClass="hidden"></horn:span></horn:div>""", """<div class="_a hidden"><span class="time _time"></span></div>""", false)
+        assertTemplateResult( """<horn:templating value="true"/><horn:div path="/a"><horn:span class="time" path="/time" emptyBodyClass="hidden"></horn:span></horn:div>""",
+                              """<div class="_a hidden"><span class="time _time"></span></div>""", false)
     }
 
     void testEncodePath() {

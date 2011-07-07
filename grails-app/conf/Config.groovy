@@ -15,4 +15,4 @@ log4j = {
 }
 
 useHTML5 = false
-hiddenCSSClass = "hidden"
+hiddenClass = "hidden"
