@@ -25,15 +25,32 @@ class HornTagLib {
      */
     static KEY_DEPTH = HornTagLib.KEY_PREFIX_HORNTAGLIB + ".depth"
 
-    static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9]+)\])/ // @todo special handling for templates?
+    /**
+     *  Regex pattern for matching array index tokens in horn html5 paths for
+     *  example '[213]'.
+     */
+    static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9]+)\])/
+
+    /**
+     *  Regex pattern for matching object derefernce tokens in horn html5 paths,
+     *  for example the '.' in 'object.property'.
+     */
     static PATTERN_PPN_DEREFERENCE = /\./
 
-    static PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/ // @todo special handling for templates?
+    /**
+     *  Regex pattern for matching array index tokens in css horn paths for
+     *  example '[213]'.
+     */
+    static PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/
+
+    /**
+     *  Regex pattern for matching object derefernce tokens in horn css paths,
+     *  for example the '-' in 'a-b'.
+     */
     static PATTERN_PP_DEREFERENCE = /-/
 
     /**
-     *  Remove a named attribute from a collection of attributes 
-     *  (name/value pairs).
+     *  Remove a named attribute from a collection.
      *  <p>
      *  If the attribute was located and removed, its former value is returned
      *  else, the 'defaultValue' supplied is returned, else <code>""</code>.
@@ -54,7 +71,7 @@ class HornTagLib {
     }
 
     /**
-     *  Add an attribute to a given collection if <code>condition == true</code>.
+     *  Add an attribute to a given collection if <code>if ( condition )</code>.
      * 
      *  @param attributeName the name of the attribute to add 
      *  @param attributeValue the value of the attribute to add
@@ -186,8 +203,7 @@ class HornTagLib {
      *      <code>Boolean true</code>, <code>false</code> otherwise
      */
     static isAttributeTruth( val ) {
-        !val ? false :
-            val instanceof Boolean ? val : (val == 'true')
+        !val ? false : val instanceof Boolean ? val : (val == 'true')
     }
 
     /**
@@ -214,7 +230,7 @@ class HornTagLib {
      *  @return <code>path</code> converted to JavaScript form
      */
     static cssToJSForm( path ) {
-        path = path.replaceFirst( "_", "-").replaceAll(
+        path = path.replaceFirst(  "_", "-").replaceAll(
             HornTagLib.PATTERN_PP_ARRAY_INDICES, "[\$2]").replaceAll(
             HornTagLib.PATTERN_PP_DEREFERENCE, ".")
 
@@ -266,6 +282,11 @@ class HornTagLib {
      *  <p>
      *  This method has two distinct modes of operation, controlled by setting
      *  templating mode using the <code>templating</code> tag.
+     *  <p>
+     *
+     *  <p>
+     *
+     *  <p>
      *
      *  @param attrs
      *  @param body
@@ -344,7 +365,7 @@ class HornTagLib {
      *  Helper tag for outputting JSON data encoded as a hidden span (or other)
      *  tag.
      *  <p>
-     *  The actual tag used can be overriden by setting the 'attrs.tag'
+     *  The actual tag used can be superseded by setting the 'attrs.tag'
      *  attribute.
      *
      *  @param body
