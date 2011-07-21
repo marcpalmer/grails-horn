@@ -6,47 +6,134 @@
  *
  *  @version 1.0
  *
- *  @requires
+ *  @requires jQuery
+ *  @requires Horn
+ *
+ *  (C) Spotty Mushroom 2011
  */
 
 /**
- *  Used to...
+ *  A Horn delegate implementation that extracts Horn data from custom HTML5
+ *  data attributes.
+ *  <P>
+ *  Please refer to our online documentation for fuller details
+ *  <a href="http://horn.io/">http://horn.io/</a>.
+ *  <P>
+ *  Use this function to create new <code>HornHTML5Features</code> instances,
+ *  thus: <code>var hornHTML5Features = new HornHTML5Features();</code>.
+ *  <P>
+ *  Set it to use on a horn instance,
+ *  <code>horn.delegate( hornHTML5Features);</code>.
+ *
+ *  @constructor
+ *
+ *  @return {HornHTML5Features} a newly initialised
+ *      <code>HornHTML5Features</code> instance
  */
-$.extend(
-    Horn.prototype, {
-        dataNameHorn:           'horn',
-        dataNameJSON:           'horn-json',
+function HornHTML5Features() {
 
-        getDataAttr: function( n, name ) {
-            var rv =  $(n).data( name);
-            return (SMUtils.isDefinedNotNull( rv) === true) ? (rv + "") : undefined;
-        },
+    /**
+     *  Determine if a given node possesses a Horn root node indicator
+     *  (the data attribute 'horn').
+     *  <P>
+     *  In this implementation we return <code>true</code> if 'node' declares
+     *  a data-attribute named 'horn' with any value whatsoever.
+     *
+     *  @param {Element} node the node to examine as to declaring a root
+     *      indicator
+     *
+     *  @return <code>true</code> if 'node' does possess a Horn root node
+     *      indicator (of any value), <code>false</code> otherwise.
+     *
+     *  @public
+     */
+    this.hasRootIndicator = function( node ) {
+        var hornDeclaration = SMUtils.getDataAttr(
+            node, HornHTML5Features.dataNameHorn);
+        var jsonDeclaration = SMUtils.getDataAttr(
+            node, HornHTML5Features.dataNameJSON);
+        return (SMUtils.isDefinedNotNull( hornDeclaration) &&
+            SMUtils.hasPrefix( hornDeclaration, "/")) ||
+            (SMUtils.isDefinedNotNull( jsonDeclaration) &&
+                SMUtils.hasPrefix( jsonDeclaration, "/"));
+    };
 
-        hasRootIndicator: function( node ) {
-            var hornDeclaration = this.getDataAttr( node, this.dataNameHorn);
-            var jsonDeclaration = this.getDataAttr( node, this.dataNameJSON);
-            return ((SMUtils.isDefinedNotNull( hornDeclaration) === true) &&
-                (SMUtils.hasPrefix( hornDeclaration, "/") === true)) ||
-                ((SMUtils.isDefinedNotNull( jsonDeclaration) === true) &&
-                (SMUtils.hasPrefix( jsonDeclaration, "/") === true));
-        },
+    /**
+     *  Determine if a node declares the JSON indicator.
+     *  <P>
+     *  Nodes that declare this indicator are implicitly value nodes and contain
+     *  literal JSON encoded as the single text element body value child  of
+     *  declaring elements.
+     *
+     *  @param {Element} node the element that may declare the Horn JSON
+     *      indicator
+     *
+     *  @return <code>true</code> if 'node' declares the Horn JSON indicator
+     *
+     *  @public
+     */
+     this.hasJSONIndicator = function( node ) {
+        return SMUtils.isDefinedNotNull(
+            SMUtils.getDataAttr( node, HornHTML5Features.dataNameJSON));
+    };
 
-        hasJSONIndicator: function( node ) {
-            return SMUtils.isDefinedNotNull(
-                this.getDataAttr( node, this.dataNameJSON)) === true;
-        },
+    /**
+     *  Extracts and returns the Horn path indicator for a given node.
+     *  <P>
+     *  In this, the HTML5 implementation, nodes can declare paths using
+     *  data-attributes named, either 'horn', OR 'json'.
+     *  <P>
+     *  Paths are given in full JavaScript-like syntax so for example,
+     *  <code>a.b[a].x[2][3</code>
+     *
+     *  @param {Element} node the node from which to extract the path indicator
+     *
+     *  @return {String|Boolean} if 'node' does have a Horn path indicator, it
+     *      is returned in <code>String</code> form, else
+     *      <code>Boolean false</code> is be returned
+     *
+     *  @public
+     */
+    this.pathIndicator = function( node ) {
+        var hornDeclaration = SMUtils.getDataAttr(
+            node, HornHTML5Features.dataNameHorn);
+        var jsonDeclaration = SMUtils.getDataAttr(
+            node, HornHTML5Features.dataNameJSON);
+        if ( jsonDeclaration === 'true' ) { jsonDeclaration = undefined; }
+        var declaration = SMUtils.isDefinedNotNull( hornDeclaration) ?
+            hornDeclaration : jsonDeclaration;
+        return SMUtils.isDefinedNotNull( declaration) ?
+            Horn.toInternalPath(declaration) : declaration;
+    };
 
-        pathIndicator: function( node ) {
-            var hornDeclaration = this.getDataAttr( node, this.dataNameHorn);
-            var jsonDeclaration = this.getDataAttr( node, this.dataNameJSON);
-            if ( jsonDeclaration === 'true' ) { jsonDeclaration = undefined; }
-            var declaration = SMUtils.isDefinedNotNull( hornDeclaration) ?
-                hornDeclaration : jsonDeclaration;
-            return SMUtils.isDefinedNotNull( declaration) ?
-                this.toInternalPath(declaration) : declaration;
-        },
+    /**
+     *  Return all the current HTML document's Horn root nodes.
+     *  <P>
+     *  This implementation thus returns all nodes with a data-attribute named
+     *  'horn' with a value that starts with a forward-slash character '/'.
+     *
+     *  @return a list of this document's Horn root nodes
+     *
+     *  @public
+     */
+    this.rootNodes = function( args ) {
+        return $('[data-horn*="/"], [data-horn-json*="/"]');
+    };
+}
 
-        rootNodes: function( args ) {
-            return $('[data-horn*="/"], [data-horn-json*="/"]');
-        }
-    });
+/**
+ *  The HTML5 data-attribute name for nodes declaring Horn property paths.
+ *
+ *  @public
+ */
+HornHTML5Features.dataNameHorn = 'horn';
+
+/**
+ *  The HTML5 data-attribute name for nodes declaring Horn JSON data property
+ *  paths.
+ *
+ *  @public
+ */
+HornHTML5Features.dataNameJSON = 'horn-json';
+
+if ( SMUtils.isDefinedNotNull( horn) ) { horn.delegate( new HornHTML5Features()); }
