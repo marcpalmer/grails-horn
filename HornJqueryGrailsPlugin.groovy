@@ -5,7 +5,7 @@ class HornJqueryGrailsPlugin {
     def pluginExcludes = []
     def author = "Chris Denman"
     def authorEmail = "chrisdenman@me.com"
-    def description = 'Easy JS HTML data embedding.'
+    def description = 'Provides the JS libraries and tags for embedding data in your HTML content.'
     def documentation = "http://grails.org/plugin/horn"
     def title = "Horn"
 }
