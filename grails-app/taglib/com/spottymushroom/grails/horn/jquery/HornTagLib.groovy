@@ -13,7 +13,7 @@ class HornTagLib {
     /**
      *  Prefix for request attributes to hopefully make them unique.
      */
-    static KEY_PREFIX_HORNTAGLIB = "com.grailsrocks.horn.hornTagLib"
+    static KEY_PREFIX_HORNTAGLIB = "com.spottymushroom.horn.hornTagLib"
 
     /**
      *  Request key for the templating option.
@@ -203,7 +203,7 @@ class HornTagLib {
      *      <code>Boolean true</code>, <code>false</code> otherwise
      */
     static isAttributeTruth( val ) {
-        !val ? false : val instanceof Boolean ? val : (val == 'true')
+        !val ? false : (val instanceof Boolean ? val : (val == 'true'))
     }
 
     /**
@@ -272,7 +272,7 @@ class HornTagLib {
      *      supplied
      *
      */
-    def encodePath = { attrs, body ->
+    def encodePathAsCSSClass = { attrs, body ->
         out << HornTagLib.jsToCSSForm(
             safeRemoveAttribute( attrs, 'path', 'encodePath'))
     }
@@ -299,7 +299,9 @@ class HornTagLib {
     def hornTag = { attrs, body ->
         def html5 = grailsApplication.config.useHTML5 == true
         def hiddenClass = grailsApplication.config.hiddenClass ?: 'hidden'
-        def templating = request[ HornTagLib.KEY_TEMPLATING] == true
+        def templatingOnEntry = request[ HornTagLib.KEY_TEMPLATING]
+        println "1: We were templating: $templatingOnEntry"
+        def templating = setTemplating(attrs.remove('template'))
         def tag = safeRemoveAttribute( attrs, 'tag', 'hornTag')
         def path = HornTagLib.removeAttribute( attrs, "path")
         def isJSON = HornTagLib.isAttributeTruth( HornTagLib.removeAttribute(
@@ -359,6 +361,12 @@ class HornTagLib {
         out << "</"
         out << tag
         out << ">"
+
+        // Reset templating flag if we weren't already templating when we entered this
+        println "2: We were templating: $templatingOnEntry"
+        if (!templatingOnEntry) {
+            request[ HornTagLib.KEY_TEMPLATING] = null
+        }
     }
 
     /**
@@ -390,9 +398,18 @@ class HornTagLib {
      *      mode is switched on, otherwise it is turned off
      *
      */
-    def templating = { attrs, body ->
-        request[ HornTagLib.KEY_TEMPLATING] = HornTagLib.isAttributeTruth(
-            HornTagLib.removeAttribute( attrs, "value"))
+    protected boolean setTemplating(value) {
+        println "setTemplating: [$value]"
+        if (value != null) {
+            println "in setTemplating: [$value]"
+            def templ = HornTagLib.isAttributeTruth(value)
+            if (request[ HornTagLib.KEY_TEMPLATING] != null) {
+                throwTagError("The [template] attribute has been set in a nested tag - you cannot do this")
+            } else {
+                request[ HornTagLib.KEY_TEMPLATING] = templ
+            }
+        }
+        return request[ HornTagLib.KEY_TEMPLATING]
     }
 
     def a = { attrs, body ->
