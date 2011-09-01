@@ -45,10 +45,10 @@ function SMUtils(){
         var data = this.cacheEntry( selector);
         if ( !SMUtils.isDefinedNotNull( data) || (refresh === true) ) {
             data = $(selector);
-            if ( data.length == 0 ) { data = undefined; }
-            elementCache[ selector] = data;
+            if ( data.length === 0 ) { data = undefined; }
+            this.setCacheEntry( selector, data);
         }
-        return SMUtils.isDefinedNotNull( data) ? data : undefined;
+        return data;
     };
 
     /**
