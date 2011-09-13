@@ -1,5 +1,6 @@
 class HornJqueryGrailsPlugin {
-    def version = "1.0.55"
+    def version = "1.0"
+    def version_build = "56"
     def grailsVersion = "1.3.1 > *"
     def dependsOn = [jquery: "1.4 > *", jqueryJson: "2.2.2 > *"]
     def pluginExcludes = []
