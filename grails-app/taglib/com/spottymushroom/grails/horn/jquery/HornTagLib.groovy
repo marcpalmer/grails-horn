@@ -32,8 +32,8 @@ class HornTagLib {
     static PATTERN_PPN_ARRAY_INDICES = /(\[([0-9]+)\])/
 
     /**
-     *  Regex pattern for matching object derefernce tokens in horn html5 paths,
-     *  for example the '.' in 'object.property'.
+     *  Regex pattern for matching object dereference tokens in horn html5
+     *  paths, for example the '.' in 'object.property'.
      */
     static PATTERN_PPN_DEREFERENCE = /\./
 
@@ -44,7 +44,7 @@ class HornTagLib {
     static PATTERN_PP_ARRAY_INDICES = /(-([0-9]+))/
 
     /**
-     *  Regex pattern for matching object derefernce tokens in horn css paths,
+     *  Regex pattern for matching object dereference tokens in horn css paths,
      *  for example the '-' in 'a-b'.
      */
     static PATTERN_PP_DEREFERENCE = /-/
@@ -162,7 +162,7 @@ class HornTagLib {
      *  <p>
      *  Nothing is written if <code>attributeValues</code> is empty.         
      *
-     *  @param out the <code>PrintWriter<code> to write to @todo check this
+     *  @param out
      *  @param attributeName the name of the html tag's attribute to write
      *  @param attributeValues the attribute values to output 
      */
@@ -178,7 +178,7 @@ class HornTagLib {
      *  <p>
      *  Nothing is done if 'attrs' is empty.    
      * 
-     *  @param out the <code>PrintWriter<code> to write to @todo check this
+     *  @param out
      *  @param attrs the attributes to output
      */
     static void outputAttributes( out, attrs ) {
@@ -279,14 +279,8 @@ class HornTagLib {
 
     /**
      *  Outputs an HTML tag decorated with Horn indicators.
-     *  <p>
-     *  This method has two distinct modes of operation, controlled by setting
-     *  templating mode using the <code>templating</code> tag.
-     *  <p>
      *
-     *  <p>
-     *
-     *  <p>
+     *  @todo docs
      *
      *  @param attrs
      *  @param body
@@ -300,14 +294,15 @@ class HornTagLib {
         def html5 = grailsApplication.config.useHTML5 == true
         def hiddenClass = grailsApplication.config.hiddenClass ?: 'hidden'
         def templatingOnEntry = request[ HornTagLib.KEY_TEMPLATING]
-        println "1: We were templating: $templatingOnEntry"
         def templating = setTemplating(attrs.remove('template'))
         def tag = safeRemoveAttribute( attrs, 'tag', 'hornTag')
         def path = HornTagLib.removeAttribute( attrs, "path")
         def isJSON = HornTagLib.isAttributeTruth( HornTagLib.removeAttribute(
             attrs, "json"))
         if ( !path && !isJSON ) {
-            throwTagError( """One of, or both of the "path" and "json" attributes must be supplied for the "<hornTag>" tag when not in templating mode.""")
+            throwTagError( """One of, or both of the "path" and "json"
+                attributes must be supplied for the "<hornTag>" tag when not in
+                templating mode.""")
         }
 
         if ( request[ HornTagLib.KEY_DEPTH] == null ) {
@@ -362,8 +357,8 @@ class HornTagLib {
         out << tag
         out << ">"
 
-        // Reset templating flag if we weren't already templating when we entered this
-        println "2: We were templating: $templatingOnEntry"
+            // Reset templating flag if we weren't already templating when we
+            // entered this
         if (!templatingOnEntry) {
             request[ HornTagLib.KEY_TEMPLATING] = null
         }
@@ -399,12 +394,11 @@ class HornTagLib {
      *
      */
     protected boolean setTemplating(value) {
-        println "setTemplating: [$value]"
         if (value != null) {
-            println "in setTemplating: [$value]"
             def templ = HornTagLib.isAttributeTruth(value)
             if (request[ HornTagLib.KEY_TEMPLATING] != null) {
-                throwTagError("The [template] attribute has been set in a nested tag - you cannot do this")
+                throwTagError("The [template] attribute has been set in a " +
+                                  "nested tag - you cannot do this")
             } else {
                 request[ HornTagLib.KEY_TEMPLATING] = templ
             }
