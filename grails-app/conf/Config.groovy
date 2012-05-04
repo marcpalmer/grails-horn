@@ -14,6 +14,8 @@ log4j = {
     warn   'org.mortbay.log'
 }
 
-useHTML5 = false
-hiddenClass = "hidden"grails.views.default.codec="none" // none, html, base64
+horn.no.html5 = false
+horn.hiddenClass = "hidden"
+
+grails.views.default.codec="none" // none, html, base64
 grails.views.gsp.encoding="UTF-8"

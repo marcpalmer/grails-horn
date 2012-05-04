@@ -297,8 +297,8 @@ class HornTagLib {
      *      body is empty and we are not in templating mode
      */
     def hornTag = { attrs, body ->
-        def html5 = grailsApplication.config.horn.non.html5 != true
-        def hiddenClass = grailsApplication.config.hiddenClass ?: 'hidden'
+        def html5 = grailsApplication.config.horn.no.html5 != true
+        def hiddenClass = grailsApplication.config.horn.hiddenClass ?: 'hidden'
         def templatingOnEntry = request[ HornTagLib.KEY_TEMPLATING]
         def templating = setTemplating(attrs.remove('template'))
         def tag = removeAttribute( attrs, 'tag', null)
