@@ -15,4 +15,5 @@ log4j = {
 }
 
 useHTML5 = false
-hiddenClass = "hidden"
+hiddenClass = "hidden"grails.views.default.codec="none" // none, html, base64
+grails.views.gsp.encoding="UTF-8"
