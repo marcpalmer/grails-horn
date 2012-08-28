@@ -11,7 +11,7 @@ class HornTagLib {
     static namespace = 'horn'
 
     /**
-     *  Prefix for request attributes to hopefully make them unique.
+     *  Prefix for request attributes
      */
     static KEY_PREFIX_HORNTAGLIB = "com.spottymushroom.horn.hornTagLib"
 
@@ -277,6 +277,12 @@ class HornTagLib {
             safeRemoveAttribute( attrs, 'path', 'encodePath'))
     }
 
+    def tag = { attrs, body ->
+        def tag = attrs.remove('tag')
+        attrs.invokeTag = tag
+        out << hornTag(attrs, body)
+    }
+    
     /**
      *  Outputs an HTML tag decorated with Horn indicators.
      *
@@ -291,11 +297,12 @@ class HornTagLib {
      *      body is empty and we are not in templating mode
      */
     def hornTag = { attrs, body ->
-        def html5 = grailsApplication.config.useHTML5 == true
-        def hiddenClass = grailsApplication.config.hiddenClass ?: 'hidden'
+        def html5 = grailsApplication.config.horn.no.html5 != true
+        def hiddenClass = grailsApplication.config.horn.hiddenClass ?: 'hidden'
         def templatingOnEntry = request[ HornTagLib.KEY_TEMPLATING]
         def templating = setTemplating(attrs.remove('template'))
-        def tag = safeRemoveAttribute( attrs, 'tag', 'hornTag')
+        def tag = removeAttribute( attrs, 'tag', null)
+        def invokeTag = removeAttribute( attrs, 'invokeTag', null)
         def path = HornTagLib.removeAttribute( attrs, "path")
         def isJSON = HornTagLib.isAttributeTruth( HornTagLib.removeAttribute(
             attrs, "json"))
@@ -315,12 +322,7 @@ class HornTagLib {
             isAbsolutePath = true
         }
 
-        request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] + 1
-        def bodyValue = body()
-        request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] - 1
-        out << "<"
-        out << tag
-
+        // Amend the attributes to include the values we need
         def newClassAttrs = splitAddAttributeValues(
             HornTagLib.removeAttribute( attrs, "class"))
 
@@ -340,25 +342,50 @@ class HornTagLib {
             HornTagLib.addAttributeValueIf( "data-json", newClassAttrs, isJSON)
         }
 
+        def value
+        if (!attrs.containsKey('value')) {
+            request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] + 1
+            value = body()
+            request[ HornTagLib.KEY_DEPTH] = request[ HornTagLib.KEY_DEPTH] - 1
+        } else {
+            value = attrs.remove('value')
+        }
+        
         def emptyBodyClass = attrs.remove('emptyBodyClass')?.trim() ?: 'hidden'
         HornTagLib.addAttributeValueIf( emptyBodyClass, newClassAttrs,
-            (bodyValue?.trim() == '') && emptyBodyClass && !templating)
+            (value?.trim() == '') && emptyBodyClass && !templating)
 
         HornTagLib.addAttributeValueIf( hiddenClass, newClassAttrs,
             isJSON || (isLevel0 && templating))
 
-        HornTagLib.outputAttribute( out, "class", newClassAttrs)
-        HornTagLib.outputAttributes( out, attrs)
-        out << ">"
+        attrs.class = newClassAttrs.join(" ")
+        
+        // Are we invoking another GSP tag and decorating it with horn?
+        if (invokeTag) {
+            def tagAttrs = [:]
+            tagAttrs.attrs = attrs
+            tagAttrs.tag = invokeTag
+            _invokeTag(tagAttrs, value)
+        } else {
+            // Write out the markup
+            out << "<"
+            out << tag
+        
+            HornTagLib.outputAttributes( out, attrs)
 
-        out << bodyValue
+            // Write out rest of the HTML
 
-        out << "</"
-        out << tag
-        out << ">"
+            out << ">"
 
-            // Reset templating flag if we weren't already templating when we
-            // entered this
+            out << value
+
+            out << "</"
+            out << tag
+            out << ">"
+        }
+        
+        // Reset templating flag if we weren't already templating when we
+        // entered this
         if (!templatingOnEntry) {
             request[ HornTagLib.KEY_TEMPLATING] = null
         }
@@ -383,6 +410,50 @@ class HornTagLib {
         out << hornTag( attrs, body)
     }
 
+    /**
+     * Resolve a tag string of the form x:yyyyy into a tag namespace and tag name, with optional no-namespacing for
+     * implicit g: tags
+     */
+    static resolveTagName(String name) {
+        def parts = name.tokenize(':')
+        def ns
+        def tagName
+        switch (parts.size()) {
+            case 1: 
+                ns = "g"
+                tagName = parts[0]
+                break;
+            case 2:
+                ns = parts[0]
+                tagName = parts[1]
+                break;
+            default:
+                throwTagError "The name needs to have a g: namespace tag name or a 'namespace:tagName' value"
+                break;
+        }
+        return [ns, tagName]
+    }
+    
+    private _invokeTag(attrs, body) {
+        def name = attrs.remove('tag')
+        if (name.indexOf('.') != -1) {
+          throwTagError "The [tag] attribute of [invokeTag] must use the colon namespace form, not period form"
+        }
+        def bodyAttr = attrs.remove('bodyContent')
+        def (ns, tagName) = HornTagLib.resolveTagName(name)
+        def mergedAttrs
+        if (attrs.attrs != null) {
+          mergedAttrs = attrs.remove('attrs')
+        }
+        if (mergedAttrs) {
+          mergedAttrs.putAll(attrs)
+        } else {
+          mergedAttrs = attrs
+        }
+        def taglib = this[ns]
+        out << taglib."${tagName}"(mergedAttrs, bodyAttr ?: body)
+    }    
+    
     /**
      *  Switch templating mode on or off.
      *
