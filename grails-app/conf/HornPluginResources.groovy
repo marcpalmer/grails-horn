@@ -1,8 +1,13 @@
 modules = {
+
+    'horn-smutils' {
+        resource id: 'smutils', url: [ plugin: 'horn-jquery', dir:'js/jquery/horn', file: 'sm-utils.js']
+    }
+
     'horn' {
+        dependsOn 'horn-smutils'
         dependsOn 'jquery'
         dependsOn 'jquery-json'
-        resource id: 'smutils', url: [ plugin: 'horn-jquery', dir:'js/jquery/horn', file:"sm-utils.js"]
         resource id: 'horn-jquery', url: [ plugin: 'horn-jquery', dir:'js/jquery/horn', file:"horn-jquery-1.0.js"]
     }
 
