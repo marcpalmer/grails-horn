@@ -885,7 +885,7 @@ SMUtils.showCenteredPopupWindow = function( url, id, w, h ) {
     window.open( url, id, SMUtils.format(
         'toolbar=0,scrollbars=0,location=0,statusbar=0,menubar=0,' +
             'resizable=0,width={0},height={1},left={2},top={3}',
-        [w, h, ((screen.width - w) * 2), ((screen.height - h) * 2)]));
+        [w, h, ((screen.width - w) / 2), ((screen.height - h) / 2)]));
 };
 
 /**
